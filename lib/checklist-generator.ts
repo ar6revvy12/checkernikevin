@@ -1,0 +1,197 @@
+import type { GamePackage, ChecklistItem } from "@/types/checklist"
+
+// Helper function to generate unique IDs
+function generateUniqueId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+}
+
+export function generateChecklist(pkg: GamePackage): Record<string, ChecklistItem[]> {
+  return {
+    "ui-ux": [
+      {
+        id: generateUniqueId(),
+        title: "Screen Layout Consistency",
+        description: "Verify layout is consistent across all game screens",
+        category: "UI / UX Validation",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Button Functionality",
+        description: "All buttons respond correctly to clicks/taps",
+        category: "UI / UX Validation",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Text Readability",
+        description: "All text is clearly readable with proper contrast",
+        category: "UI / UX Validation",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Color Contrast",
+        description: "Ensure WCAG color contrast standards are met",
+        category: "UI / UX Validation",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Responsive Design",
+        description: `Test across multiple resolutions (${pkg.reels})`,
+        category: "UI / UX Validation",
+        status: "unchecked",
+        evidence: undefined,
+      },
+    ],
+    "menu-nav": [
+      {
+        id: generateUniqueId(),
+        title: "Start Game Button",
+        description: "Start game initializes correctly with proper bet setup",
+        category: "Main Menu & Navigation",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Continue Game",
+        description: "Continue button loads saved game state correctly",
+        category: "Main Menu & Navigation",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Settings Menu",
+        description: "Settings menu opens and closes properly",
+        category: "Main Menu & Navigation",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Back Button",
+        description: "Back button works on all navigation screens",
+        category: "Main Menu & Navigation",
+        status: "unchecked",
+        evidence: undefined,
+      },
+    ],
+    gameplay: [
+      {
+        id: generateUniqueId(),
+        title: `Reel Spin (${pkg.reels})`,
+        description: "Reels spin smoothly and stop correctly",
+        category: "Core Gameplay Functions",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Win Detection",
+        description: `Wins correctly identified for ${pkg.paylines} pattern`,
+        category: "Core Gameplay Functions",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Payout Calculation",
+        description: `Payouts calculated correctly (Max: ${pkg.maxWin})`,
+        category: "Core Gameplay Functions",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Bet Levels",
+        description: `Min: ${pkg.minBet}, Max: ${pkg.maxBet} working correctly`,
+        category: "Core Gameplay Functions",
+        status: "unchecked",
+        evidence: undefined,
+      },
+    ],
+    features: pkg.features.map((feature) => ({
+      id: generateUniqueId(),
+      title: feature,
+      description: `${feature} mechanic functions as specified`,
+      category: "Features & Game Systems",
+      status: "unchecked",
+      evidence: undefined,
+    })),
+    audio: [
+      {
+        id: generateUniqueId(),
+        title: "Spin Sound Effects",
+        description: "Spin sound effect plays during reels spinning",
+        category: "Visual / Audio Elements",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Win Sound",
+        description: "Win sound plays when winning combination appears",
+        category: "Visual / Audio Elements",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Button Sounds",
+        description: "Button click sounds play correctly",
+        category: "Visual / Audio Elements",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Background Music",
+        description: "Background music loops properly without gaps",
+        category: "Visual / Audio Elements",
+        status: "unchecked",
+        evidence: undefined,
+      },
+    ],
+    performance: [
+      {
+        id: generateUniqueId(),
+        title: "FPS Stability",
+        description: "Frame rate remains stable (60 FPS target)",
+        category: "Performance Checks",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Load Time",
+        description: "Game loads within acceptable time limits",
+        category: "Performance Checks",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Memory Usage",
+        description: "No memory leaks or excessive RAM consumption",
+        category: "Performance Checks",
+        status: "unchecked",
+        evidence: undefined,
+      },
+      {
+        id: generateUniqueId(),
+        title: "Responsiveness",
+        description: "Input responds immediately without lag",
+        category: "Performance Checks",
+        status: "unchecked",
+        evidence: undefined,
+      },
+    ],
+  }
+}
