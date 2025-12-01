@@ -2,7 +2,6 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
-import { AIChat } from "@/components/ai-chat"
 import { Sidebar } from "@/components/sidebar"
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
@@ -46,7 +45,6 @@ export default function RootLayout({
           <main className="ml-64">
             {children}
           </main>
-          <AIChat />
         </ThemeProvider>
         <Analytics />
       </body>

@@ -1,240 +1,284 @@
 "use client"
 
-import { useState } from "react"
-import { Trash2, ExternalLink, Search, X, Play, Pencil } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Trash2, Search, Pencil, ChevronDown, Filter, AlertCircle, ExternalLink } from "lucide-react"
 import type { Bug, BugStatus } from "@/types/bugs"
 
 interface BugsTableProps {
   bugs: Bug[]
+  games: { id: string; name: string }[]
   onUpdateStatus: (bugId: string, status: BugStatus) => void
   onDeleteBug: (bugId: string) => void
   onEditBug: (bug: Bug) => void
 }
 
-const statusColors: Record<BugStatus, string> = {
-  open: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800",
-  "in-progress": "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800",
-  done: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800",
-  "wont-fix": "bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-slate-600",
+const statusConfig: Record<BugStatus, { bg: string; text: string; dot: string; label: string }> = {
+  open: { bg: "bg-red-500/10", text: "text-red-500", dot: "bg-red-500", label: "Open" },
+  "in-progress": { bg: "bg-yellow-500/10", text: "text-yellow-500", dot: "bg-yellow-500", label: "In Progress" },
+  done: { bg: "bg-green-500/10", text: "text-green-500", dot: "bg-green-500", label: "Done" },
+  "wont-fix": { bg: "bg-gray-500/10", text: "text-gray-500", dot: "bg-gray-500", label: "Won't Fix" },
 }
 
-const statusLabels: Record<BugStatus, string> = {
-  open: "Open",
-  "in-progress": "In Progress",
-  done: "Done",
-  "wont-fix": "Won't Fix",
-}
+const statusOptions: BugStatus[] = ["open", "in-progress", "done", "wont-fix"]
 
-function isVideoUrl(url: string): boolean {
-  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url) || url.includes("youtube") || url.includes("vimeo")
-}
+// Expandable Description Component
+function ExpandableDescription({ text, maxLength = 100 }: { text: string; maxLength?: number }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [contentHeight, setContentHeight] = useState<number>(0)
+  const needsTruncation = text.length > maxLength
 
-function isImageUrl(url: string): boolean {
-  return /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i.test(url)
-}
+  useEffect(() => {
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.scrollHeight)
+    }
+  }, [text, isExpanded])
 
-function MediaPreview({ url, onClose }: { url: string; onClose: () => void }) {
-  const isVideo = isVideoUrl(url)
+  if (!needsTruncation) {
+    return <p className="text-sm text-gray-600 dark:text-gray-300">{text}</p>
+  }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="relative max-w-4xl max-h-[90vh] mx-4" onClick={(e) => e.stopPropagation()}>
-        <button
-          onClick={onClose}
-          className="absolute -top-10 right-0 text-white hover:text-gray-300"
-          aria-label="Close preview"
-        >
-          <X className="w-8 h-8" />
-        </button>
-        {isVideo ? (
-          <video
-            src={url}
-            controls
-            autoPlay
-            className="max-w-full max-h-[80vh] rounded-lg"
-          >
-            Your browser does not support the video tag.
-          </video>
-        ) : (
-          <img
-            src={url}
-            alt="Bug screenshot"
-            className="max-w-full max-h-[80vh] rounded-lg object-contain"
-          />
-        )}
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-white hover:text-gray-300 flex items-center gap-1 text-sm"
-        >
-          <ExternalLink className="w-4 h-4" />
-          Open in new tab
-        </a>
+    <div className="max-w-md">
+      <div
+        className="overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ maxHeight: isExpanded ? `${contentHeight}px` : "2.5rem" }}
+      >
+        <div ref={contentRef}>
+          <p className="text-sm text-gray-600 dark:text-gray-300">{text}</p>
+        </div>
       </div>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="text-xs text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 mt-1 font-medium transition-colors"
+      >
+        {isExpanded ? "Show less" : "Show more"}
+      </button>
     </div>
   )
 }
 
-function ThumbnailPreview({ url, onClick }: { url: string; onClick: () => void }) {
-  const isVideo = isVideoUrl(url)
-  const isImage = isImageUrl(url)
+// Custom Status Dropdown
+function StatusDropdown({ value, onChange }: { value: BugStatus; onChange: (status: BugStatus) => void }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const config = statusConfig[value]
 
-  if (!isImage && !isVideo) {
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800"
-      >
-        <ExternalLink className="w-4 h-4" />
-        View
-      </a>
-    )
-  }
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   return (
-    <button
-      onClick={onClick}
-      className="relative group cursor-pointer"
-    >
-      {isVideo ? (
-        <div className="w-16 h-12 bg-gray-200 rounded flex items-center justify-center group-hover:bg-gray-300 transition-colors">
-          <Play className="w-6 h-6 text-gray-600" />
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-medium ${config.bg} ${config.text} transition-colors hover:opacity-80`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+        {config.label}
+        <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-[130px] bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-lg overflow-hidden">
+          {statusOptions.map((status) => {
+            const opt = statusConfig[status]
+            return (
+              <button
+                key={status}
+                onClick={() => { onChange(status); setIsOpen(false) }}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors ${
+                  value === status ? `${opt.bg} ${opt.text}` : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${opt.dot}`} />
+                {opt.label}
+              </button>
+            )
+          })}
         </div>
-      ) : (
-        <img
-          src={url}
-          alt="Bug screenshot thumbnail"
-          className="w-16 h-12 object-cover rounded border border-gray-200 group-hover:border-blue-400 transition-colors"
-        />
       )}
-      <span className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 rounded transition-colors">
-        <ExternalLink className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-      </span>
-    </button>
+    </div>
   )
 }
 
-export function BugsTable({ bugs, onUpdateStatus, onDeleteBug, onEditBug }: BugsTableProps) {
+export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug }: BugsTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<BugStatus | "all">("all")
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [gameFilter, setGameFilter] = useState<string>("all")
 
   const filteredBugs = bugs.filter((bug) => {
     const matchesSearch =
       bug.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       bug.gameName?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || bug.status === statusFilter
-    return matchesSearch && matchesStatus
+    const matchesGame = gameFilter === "all" || bug.gameId === gameFilter
+    return matchesSearch && matchesStatus && matchesGame
   })
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
+      year: "numeric",
     })
   }
 
+  // Stats
+  const openCount = bugs.filter((b) => b.status === "open").length
+  const inProgressCount = bugs.filter((b) => b.status === "in-progress").length
+  const doneCount = bugs.filter((b) => b.status === "done").length
+
   return (
-    <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
-          <input
-            type="text"
-            placeholder="Search bugs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+    <div className="space-y-6">
+      {/* Stats Row */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{bugs.length}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Total Bugs</p>
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as BugStatus | "all")}
-          className="px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">All Status</option>
-          <option value="open">Open</option>
-          <option value="in-progress">In Progress</option>
-          <option value="done">Done</option>
-          <option value="wont-fix">Won't Fix</option>
-        </select>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+          <p className="text-2xl font-bold text-red-500">{openCount}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Open</p>
+        </div>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+          <p className="text-2xl font-bold text-yellow-500">{inProgressCount}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">In Progress</p>
+        </div>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+          <p className="text-2xl font-bold text-green-500">{doneCount}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Resolved</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Search */}
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search bugs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Game Filter */}
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <select
+              value={gameFilter}
+              onChange={(e) => setGameFilter(e.target.value)}
+              className="px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              title="Filter by game"
+              aria-label="Filter by game"
+            >
+              <option value="all">All Games</option>
+              {games.map((game) => (
+                <option key={game.id} value={game.id}>{game.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as BugStatus | "all")}
+            className="px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            title="Filter by status"
+            aria-label="Filter by status"
+          >
+            <option value="all">All Status</option>
+            <option value="open">Open</option>
+            <option value="in-progress">In Progress</option>
+            <option value="done">Done</option>
+            <option value="wont-fix">Won't Fix</option>
+          </select>
+
+          {/* Results count */}
+          <span className="text-sm text-gray-500 dark:text-gray-400 ml-auto">
+            {filteredBugs.length} of {bugs.length} bugs
+          </span>
+        </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Date</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Game</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Description</th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">SS/Vid</th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+          <thead>
+            <tr className="border-b border-gray-200 dark:border-slate-700">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Game</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Media</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
             {filteredBugs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                  No bugs found
+                <td colSpan={6} className="px-4 py-12 text-center">
+                  <AlertCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                  <p className="text-gray-500 dark:text-gray-400">No bugs found</p>
                 </td>
               </tr>
             ) : (
               filteredBugs.map((bug) => (
-                <tr key={bug.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                    {formatDate(bug.createdAt)}
+                <tr key={bug.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <td className="px-4 py-3">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(bug.createdAt)}</span>
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
-                    {bug.gameName}
+                  <td className="px-4 py-3">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{bug.gameName}</span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 max-w-md">
-                    {bug.description}
+                  <td className="px-4 py-3">
+                    <ExpandableDescription text={bug.description} maxLength={80} />
                   </td>
-                  <td className="px-4 py-3 text-sm text-center">
+                  <td className="px-4 py-3 text-center">
                     {bug.screenshotUrl ? (
-                      <div className="flex justify-center">
-                        <ThumbnailPreview
-                          url={bug.screenshotUrl}
-                          onClick={() => setPreviewUrl(bug.screenshotUrl)}
-                        />
-                      </div>
+                      <a
+                        href={bug.screenshotUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:underline font-medium"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        View
+                      </a>
                     ) : (
-                      <span className="text-gray-400 dark:text-gray-500">-</span>
+                      <span className="text-sm text-gray-300 dark:text-gray-600">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    <select
-                      value={bug.status}
-                      onChange={(e) => onUpdateStatus(bug.id, e.target.value as BugStatus)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium border cursor-pointer ${statusColors[bug.status]}`}
-                    >
-                      {Object.entries(statusLabels).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-center">
+                      <StatusDropdown
+                        value={bug.status}
+                        onChange={(status) => onUpdateStatus(bug.id, status)}
+                      />
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-center">
+                  <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-1">
                       <button
                         onClick={() => onEditBug(bug)}
-                        className="p-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                         title="Edit bug"
+                        aria-label="Edit bug"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDeleteBug(bug.id)}
-                        className="p-2 text-red-500 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                         title="Delete bug"
+                        aria-label="Delete bug"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -246,11 +290,6 @@ export function BugsTable({ bugs, onUpdateStatus, onDeleteBug, onEditBug }: Bugs
           </tbody>
         </table>
       </div>
-
-      {/* Media Preview Modal */}
-      {previewUrl && (
-        <MediaPreview url={previewUrl} onClose={() => setPreviewUrl(null)} />
-      )}
     </div>
   )
 }

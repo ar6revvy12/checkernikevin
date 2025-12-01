@@ -36,21 +36,21 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
+      <nav className="flex-1 p-3">
+        <ul className="space-y-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
                     isActive
                       ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
                       : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
-                  <item.icon className={`w-5 h-5 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"}`} />
+                  <item.icon className={`w-4 h-4 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"}`} />
                   {item.label}
                 </Link>
               </li>
@@ -77,7 +77,10 @@ export function Sidebar() {
             </>
           )}
         </button>
-        <p className="text-xs text-gray-400 dark:text-gray-500 text-center">Game QA Tool v1.0</p>
+        <div className="text-center space-y-0.5">
+          <p className="text-xs text-gray-400 dark:text-gray-500">Game QA Tool v1.0</p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-600">by jolo</p>
+        </div>
       </div>
     </aside>
   )

@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Bug } from "lucide-react"
+import { Plus, Bug, ClipboardCheck } from "lucide-react"
+import Link from "next/link"
 import { useBugs } from "@/hooks/use-bugs"
 import { BugsTable } from "@/components/bugs-table"
 import { AddBugModal } from "@/components/add-bug-modal"
@@ -74,64 +75,86 @@ export default function BugsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      <div className="px-8 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Bug className="w-8 h-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Bugs & Errors</h1>
+      {/* Header */}
+      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                <Bug className="w-7 h-7 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Bugs & Errors</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Track and manage reported issues</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <ClipboardCheck className="w-4 h-4" />
+                Checklist
+              </Link>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Add Bug
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Add Bug
-          </button>
         </div>
+      </div>
 
-        {/* Content */}
+      {/* Content */}
+      <div className="p-8">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-red-200 dark:border-red-800 border-t-red-600 dark:border-t-red-400 rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-500 dark:text-gray-400">Loading bugs...</p>
+            </div>
           </div>
         ) : (
           <BugsTable
             bugs={bugs}
+            games={games.map(g => ({ id: g.id, name: g.name }))}
             onUpdateStatus={handleUpdateStatus}
             onDeleteBug={handleDeleteBug}
             onEditBug={handleEditBug}
           />
         )}
-
-        {/* Add Bug Modal */}
-        <AddBugModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleAddBug}
-          games={games}
-        />
-
-        {/* Edit Bug Modal */}
-        <EditBugModal
-          isOpen={editModal.isOpen}
-          onClose={() => setEditModal({ isOpen: false, bug: null })}
-          onSubmit={handleUpdateBug}
-          bug={editModal.bug}
-          games={games}
-        />
-
-        {/* Delete Confirmation Modal */}
-        <ConfirmModal
-          isOpen={deleteConfirm.isOpen}
-          onClose={() => setDeleteConfirm({ isOpen: false, bugId: null })}
-          onConfirm={confirmDeleteBug}
-          title="Delete Bug"
-          message="Are you sure you want to delete this bug? This action cannot be undone."
-          confirmText="Delete Bug"
-          confirmColor="red"
-        />
       </div>
+
+      {/* Add Bug Modal */}
+      <AddBugModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddBug}
+        games={games}
+      />
+
+      {/* Edit Bug Modal */}
+      <EditBugModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, bug: null })}
+        onSubmit={handleUpdateBug}
+        bug={editModal.bug}
+        games={games}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, bugId: null })}
+        onConfirm={confirmDeleteBug}
+        title="Delete Bug"
+        message="Are you sure you want to delete this bug? This action cannot be undone."
+        confirmText="Delete Bug"
+        confirmColor="red"
+      />
     </div>
   )
 }
