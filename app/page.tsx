@@ -22,7 +22,7 @@ export default function Home() {
     gameId: "",
     gameName: "",
   })
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["ui-ux"]))
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; gameId: string | null; gameName: string }>({
     isOpen: false,
     gameId: null,
@@ -56,7 +56,7 @@ export default function Home() {
       await addGame(newGame)
       setActiveGameId(newGame.id)
       setShowAddModal(false)
-      setExpandedSections(new Set(["ui-ux"]))
+      setExpandedSections(new Set())
     } catch (error) {
       console.error("Failed to add game:", error)
     }

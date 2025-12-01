@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Sidebar } from "@/components/sidebar"
 import { ThemeProvider } from "@/components/theme-provider"
+import { LoadingScreen } from "@/components/loading-screen"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -41,6 +42,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased bg-gray-50 dark:bg-slate-900`}>
         <ThemeProvider>
+          <LoadingScreen />
           <Sidebar />
           <main className="ml-64">
             {children}
