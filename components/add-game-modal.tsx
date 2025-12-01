@@ -33,10 +33,10 @@ export function AddGameModal({ isOpen, onClose, onAddGame }: AddGameModalProps) 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-w-md w-full">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg max-w-md w-full">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Add New Game</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors">
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors">
             <X size={20} className="text-gray-500 dark:text-gray-400" />
           </button>
         </div>
@@ -52,7 +52,7 @@ export function AddGameModal({ isOpen, onClose, onAddGame }: AddGameModalProps) 
                 setError("")
               }}
               placeholder="e.g., Dragon's Gold, Ocean Quest"
-              className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
           </div>
@@ -62,7 +62,7 @@ export function AddGameModal({ isOpen, onClose, onAddGame }: AddGameModalProps) 
             <select
               value={selectedPackage}
               onChange={(e) => setSelectedPackage(e.target.value)}
-              className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {Object.entries(gamePackages).map(([key, pkg]) => (
                 <option key={key} value={key}>
@@ -72,7 +72,7 @@ export function AddGameModal({ isOpen, onClose, onAddGame }: AddGameModalProps) 
             </select>
           </div>
 
-          <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-md text-sm text-gray-600 dark:text-gray-400">
+          <div className="bg-gray-100 dark:bg-slate-700 p-3 rounded-md text-sm text-gray-600 dark:text-gray-400">
             <p className="font-medium text-gray-900 dark:text-white mb-1">Package Info:</p>
             {(() => {
               const pkg = gamePackages[selectedPackage as keyof typeof gamePackages]
@@ -92,7 +92,7 @@ export function AddGameModal({ isOpen, onClose, onAddGame }: AddGameModalProps) 
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="flex-1 px-4 py-2 rounded-md border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>

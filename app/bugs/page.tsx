@@ -5,12 +5,18 @@ import { Plus, Bug } from "lucide-react"
 import { useBugs } from "@/hooks/use-bugs"
 import { BugsTable } from "@/components/bugs-table"
 import { AddBugModal } from "@/components/add-bug-modal"
+import { EditBugModal } from "@/components/edit-bug-modal"
 import { ConfirmModal } from "@/components/confirm-modal"
 import type { Game } from "@/types/checklist"
+import type { Bug as BugType, BugStatus } from "@/types/bugs"
 
 export default function BugsPage() {
   const { bugs, isLoading, addBug, updateBug, deleteBug } = useBugs()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editModal, setEditModal] = useState<{ isOpen: boolean; bug: BugType | null }>({
+    isOpen: false,
+    bug: null,
+  })
   const [games, setGames] = useState<Game[]>([])
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; bugId: string | null }>({
     isOpen: false,
@@ -43,6 +49,19 @@ export default function BugsPage() {
     await updateBug(bugId, { status: status as any })
   }
 
+  const handleEditBug = (bug: BugType) => {
+    setEditModal({ isOpen: true, bug })
+  }
+
+  const handleUpdateBug = async (bugId: string, updates: { gameId: string; description: string; screenshotUrl: string | null; status: BugStatus }) => {
+    await updateBug(bugId, {
+      gameId: updates.gameId,
+      description: updates.description,
+      screenshotUrl: updates.screenshotUrl,
+      status: updates.status,
+    })
+  }
+
   const handleDeleteBug = (bugId: string) => {
     setDeleteConfirm({ isOpen: true, bugId })
   }
@@ -54,7 +73,7 @@ export default function BugsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="px-8 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -81,6 +100,7 @@ export default function BugsPage() {
             bugs={bugs}
             onUpdateStatus={handleUpdateStatus}
             onDeleteBug={handleDeleteBug}
+            onEditBug={handleEditBug}
           />
         )}
 
@@ -89,6 +109,15 @@ export default function BugsPage() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleAddBug}
+          games={games}
+        />
+
+        {/* Edit Bug Modal */}
+        <EditBugModal
+          isOpen={editModal.isOpen}
+          onClose={() => setEditModal({ isOpen: false, bug: null })}
+          onSubmit={handleUpdateBug}
+          bug={editModal.bug}
           games={games}
         />
 

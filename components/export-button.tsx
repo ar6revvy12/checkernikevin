@@ -50,7 +50,7 @@ export function ExportButton({ checklist, selectedPackage, gameName }: ExportBut
       <div className="flex gap-2">
         <button 
           onClick={() => setShowPreview(true)} 
-          className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >
           <Eye className="mr-2 h-4 w-4" />
           Preview

@@ -58,7 +58,7 @@ export default function VideoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 p-8">
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-900 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
           Video Player
@@ -146,7 +146,7 @@ export default function VideoPage() {
         </div>
 
         <p className="text-center text-gray-500 dark:text-gray-400 mt-6 text-sm">
-          Playing: <code className="bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">ian_cocke.mp4</code>
+          Playing: <code className="bg-gray-200 dark:bg-slate-700 px-2 py-1 rounded">ian_cocke.mp4</code>
         </p>
       </div>
     </div>

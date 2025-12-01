@@ -6,6 +6,7 @@ import { ChecklistSection } from "@/components/checklist-section"
 import { ProgressBar } from "@/components/progress-bar"
 import { ExportButton } from "@/components/export-button"
 import { AddGameModal } from "@/components/add-game-modal"
+import { EditGameModal } from "@/components/edit-game-modal"
 import { ConfirmModal } from "@/components/confirm-modal"
 import { GameTabs } from "@/components/game-tabs"
 import { useGames } from "@/hooks/use-games"
@@ -14,9 +15,14 @@ import { gamePackages } from "@/lib/game-packages"
 import { generateChecklist } from "@/lib/checklist-generator"
 
 export default function Home() {
-  const { games, isLoading, addGame, deleteGame, updateChecklist } = useGames()
+  const { games, isLoading, addGame, deleteGame, updateGame, updateChecklist } = useGames()
   const [activeGameId, setActiveGameId] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [editModal, setEditModal] = useState<{ isOpen: boolean; gameId: string; gameName: string }>({
+    isOpen: false,
+    gameId: "",
+    gameName: "",
+  })
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["ui-ux"]))
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; gameId: string | null; gameName: string }>({
     isOpen: false,
@@ -55,6 +61,18 @@ export default function Home() {
   const handleDeleteGame = (gameId: string) => {
     const game = games.find((g) => g.id === gameId)
     setDeleteConfirm({ isOpen: true, gameId, gameName: game?.name || "" })
+  }
+
+  const handleEditGame = (gameId: string, gameName: string) => {
+    setEditModal({ isOpen: true, gameId, gameName })
+  }
+
+  const confirmEditGame = async (gameId: string, name: string) => {
+    try {
+      await updateGame(gameId, name)
+    } catch (error) {
+      console.error("Failed to update game:", error)
+    }
   }
 
   const confirmDeleteGame = async () => {
@@ -106,8 +124,8 @@ export default function Home() {
     : 0
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+    <main className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <div className="border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-800">
         <div className="px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -125,7 +143,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div className="border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-800">
         <div className="px-8">
           <GameTabs
             games={games}
@@ -133,6 +151,7 @@ export default function Home() {
             onSelectGame={setActiveGameId}
             onAddGame={() => setShowAddModal(true)}
             onDeleteGame={handleDeleteGame}
+            onEditGame={handleEditGame}
           />
         </div>
       </div>
@@ -146,7 +165,7 @@ export default function Home() {
           <div className="grid gap-8 lg:grid-cols-4">
             {/* Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-8 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+              <div className="sticky top-8 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
                 <div className="mb-6">
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Package Details</h3>
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -185,6 +204,15 @@ export default function Home() {
       )}
 
       <AddGameModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} onAddGame={handleAddGame} />
+
+      {/* Edit Game Modal */}
+      <EditGameModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, gameId: "", gameName: "" })}
+        onSubmit={confirmEditGame}
+        gameId={editModal.gameId}
+        currentName={editModal.gameName}
+      />
 
       {/* Delete Game Confirmation Modal */}
       <ConfirmModal

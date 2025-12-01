@@ -1,5 +1,5 @@
 import useSWR from "swr"
-import { fetchGames, createGame, deleteGame, updateChecklistItems } from "@/lib/api"
+import { fetchGames, createGame, deleteGame, updateGame, updateChecklistItems } from "@/lib/api"
 import type { Game, ChecklistItem } from "@/types/checklist"
 
 export function useGames() {
@@ -21,6 +21,16 @@ export function useGames() {
       await mutate()
     } catch (error) {
       console.error("Failed to delete game:", error)
+      throw error
+    }
+  }
+
+  const handleUpdateGame = async (gameId: string, name: string) => {
+    try {
+      await updateGame(gameId, name)
+      await mutate()
+    } catch (error) {
+      console.error("Failed to update game:", error)
       throw error
     }
   }
@@ -75,6 +85,7 @@ export function useGames() {
     error,
     addGame: handleAddGame,
     deleteGame: handleDeleteGame,
+    updateGame: handleUpdateGame,
     updateChecklist: handleUpdateChecklist,
   }
 }

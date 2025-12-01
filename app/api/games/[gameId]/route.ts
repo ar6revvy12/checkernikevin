@@ -39,6 +39,27 @@ export async function GET(request: Request, { params }: { params: Promise<{ game
   }
 }
 
+// PATCH update game
+export async function PATCH(request: Request, { params }: { params: Promise<{ gameId: string }> }) {
+  try {
+    const { gameId } = await params
+    const body = await request.json()
+    const supabase = await createClient()
+
+    const { error } = await supabase
+      .from("games")
+      .update({ name: body.name })
+      .eq("id", gameId)
+
+    if (error) throw error
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error updating game:", error)
+    return NextResponse.json({ error: "Failed to update game" }, { status: 500 })
+  }
+}
+
 // DELETE game
 export async function DELETE(request: Request, { params }: { params: Promise<{ gameId: string }> }) {
   try {

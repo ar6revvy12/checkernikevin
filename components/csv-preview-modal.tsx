@@ -80,9 +80,9 @@ export function CSVPreviewModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
               <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -94,7 +94,7 @@ export function CSVPreviewModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
             aria-label="Close modal"
           >
             <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -102,7 +102,7 @@ export function CSVPreviewModal({
         </div>
 
         {/* Metadata */}
-        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-b border-gray-200 dark:border-slate-700">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <span className="text-gray-500 dark:text-gray-400">Game:</span>
@@ -128,7 +128,7 @@ export function CSVPreviewModal({
         {/* Table Preview */}
         <div className="flex-1 overflow-auto p-4">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-gray-100 dark:bg-gray-800">
+            <thead className="sticky top-0 bg-gray-100 dark:bg-slate-700">
               <tr>
                 <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 rounded-l-lg">
                   Category
@@ -141,9 +141,9 @@ export function CSVPreviewModal({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
               {items.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                     {item.category}
                   </td>
@@ -162,14 +162,14 @@ export function CSVPreviewModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/50">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {totalCount} items total
           </p>
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>

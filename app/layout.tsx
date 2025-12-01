@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased bg-gray-50 dark:bg-gray-950`}>
+      <body className={`font-sans antialiased bg-gray-50 dark:bg-slate-900`}>
         <ThemeProvider>
           <Sidebar />
           <main className="ml-64">

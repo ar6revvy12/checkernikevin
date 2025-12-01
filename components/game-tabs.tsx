@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { X, Plus, Search } from "lucide-react"
+import { X, Plus, Search, Pencil } from "lucide-react"
 import type { Game } from "@/types/checklist"
 
 interface GameTabsProps {
@@ -10,9 +10,10 @@ interface GameTabsProps {
   onSelectGame: (gameId: string) => void
   onAddGame: () => void
   onDeleteGame: (gameId: string) => void
+  onEditGame: (gameId: string, gameName: string) => void
 }
 
-export function GameTabs({ games, activeGameId, onSelectGame, onAddGame, onDeleteGame }: GameTabsProps) {
+export function GameTabs({ games, activeGameId, onSelectGame, onAddGame, onDeleteGame, onEditGame }: GameTabsProps) {
   const [searchQuery, setSearchQuery] = useState("")
 
   const filteredGames = games.filter((game) =>
@@ -29,7 +30,7 @@ export function GameTabs({ games, activeGameId, onSelectGame, onAddGame, onDelet
           placeholder="Search games..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
 
@@ -41,11 +42,18 @@ export function GameTabs({ games, activeGameId, onSelectGame, onAddGame, onDelet
           className={`flex items-center gap-2 px-4 py-2 rounded-lg border whitespace-nowrap transition-colors ${
             activeGameId === game.id
               ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600"
+              : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-slate-600"
           }`}
         >
           <button onClick={() => onSelectGame(game.id)} className="hover:underline font-medium">
             {game.name}
+          </button>
+          <button
+            onClick={() => onEditGame(game.id, game.name)}
+            className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors"
+            title="Edit game"
+          >
+            <Pencil size={14} />
           </button>
           <button
             onClick={() => onDeleteGame(game.id)}

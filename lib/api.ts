@@ -47,6 +47,15 @@ export async function deleteGame(gameId: string): Promise<void> {
   if (!response.ok) throw new Error("Failed to delete game")
 }
 
+export async function updateGame(gameId: string, name: string): Promise<void> {
+  const response = await fetch(`/api/games/${gameId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  })
+  if (!response.ok) throw new Error("Failed to update game")
+}
+
 export async function updateChecklistItems(
   gameId: string,
   items: (ChecklistItem & { section_id: string })[],

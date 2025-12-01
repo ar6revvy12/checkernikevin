@@ -31,10 +31,10 @@ export function ChecklistSection({ title, items, isExpanded, onToggleExpand, onU
   const completedCount = items.filter((item) => item.status === "done").length
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
       <button
         onClick={onToggleExpand}
-        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
       >
         <div className="flex items-center gap-3 flex-1 text-left">
           <ChevronDown
@@ -56,11 +56,11 @@ export function ChecklistSection({ title, items, isExpanded, onToggleExpand, onU
       </button>
 
       {isExpanded && (
-        <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 space-y-4">
+        <div className="border-t border-gray-200 dark:border-slate-700 px-6 py-4 space-y-4">
           {items.map((item) => (
             <div
               key={item.id}
-              className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors space-y-3"
+              className="p-4 rounded-lg border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors space-y-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
@@ -93,12 +93,12 @@ export function ChecklistSection({ title, items, isExpanded, onToggleExpand, onU
                   placeholder="Add evidence link or image URL..."
                   value={item.evidence || ""}
                   onChange={(e) => onUpdateItem(item.id, { evidence: e.target.value })}
-                  className="text-xs px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="text-xs px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {item.evidence && (
                   <button
                     onClick={() => onUpdateItem(item.id, { evidence: undefined })}
-                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-slate-600 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   >
                     <X className="h-4 w-4" />
                   </button>
