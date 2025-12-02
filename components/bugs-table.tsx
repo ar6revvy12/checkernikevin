@@ -127,17 +127,21 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug 
     })
   }
 
-  // Stats
-  const openCount = bugs.filter((b) => b.status === "open").length
-  const inProgressCount = bugs.filter((b) => b.status === "in-progress").length
-  const doneCount = bugs.filter((b) => b.status === "done").length
+  // Bugs filtered by game only (for stats)
+  const gameFilteredBugs = gameFilter === "all" ? bugs : bugs.filter((b) => b.gameId === gameFilter)
+
+  // Stats based on game filter
+  const totalCount = gameFilteredBugs.length
+  const openCount = gameFilteredBugs.filter((b) => b.status === "open").length
+  const inProgressCount = gameFilteredBugs.filter((b) => b.status === "in-progress").length
+  const doneCount = gameFilteredBugs.filter((b) => b.status === "done").length
 
   return (
     <div className="space-y-6">
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{bugs.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalCount}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400">Total Bugs</p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
