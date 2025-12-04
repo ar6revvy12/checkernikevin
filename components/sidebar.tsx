@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ClipboardCheck, Bug, Moon, Sun, Play, Menu, X } from "lucide-react"
+import { ClipboardCheck, Bug, Moon, Sun, Menu, X } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 
 const navItems = [
@@ -16,11 +16,6 @@ const navItems = [
     href: "/bugs",
     label: "Bugs & Errors",
     icon: Bug,
-  },
-  {
-    href: "/video",
-    label: "Video",
-    icon: Play,
   },
 ]
 
