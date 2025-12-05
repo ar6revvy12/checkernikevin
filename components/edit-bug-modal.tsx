@@ -2,132 +2,168 @@
 
 import { useState, useEffect } from "react"
 import { X } from "lucide-react"
-import type { Game } from "@/types/checklist"
-import type { Bug as BugType, BugStatus } from "@/types/bugs"
+import type { Bug, BugStatus } from "@/types/bugs"
 
 interface EditBugModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (bugId: string, updates: { gameId: string; casino: string | null; description: string; screenshotUrl: string | null; status: BugStatus }) => void
-  bug: BugType | null
-  games: Game[]
+  onEdit: (bugId: string, data: {
+    gameId: string
+    casino: string
+    description: string
+    screenshotUrl: string
+    status: BugStatus
+  }) => void
+  bug: Bug | null
+  games: { id: string; name: string }[]
 }
 
-export function EditBugModal({ isOpen, onClose, onSubmit, bug, games }: EditBugModalProps) {
+export function EditBugModal({ isOpen, onClose, onEdit, bug, games }: EditBugModalProps) {
   const [gameId, setGameId] = useState("")
   const [casino, setCasino] = useState("")
   const [description, setDescription] = useState("")
   const [screenshotUrl, setScreenshotUrl] = useState("")
   const [status, setStatus] = useState<BugStatus>("open")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    if (isOpen && bug) {
+    if (bug) {
       setGameId(bug.gameId)
       setCasino(bug.casino || "")
       setDescription(bug.description)
       setScreenshotUrl(bug.screenshotUrl || "")
       setStatus(bug.status)
     }
-  }, [isOpen, bug])
+  }, [bug])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!bug || !gameId || !description.trim()) return
-    onSubmit(bug.id, {
+
+    setIsSubmitting(true)
+    await onEdit(bug.id, {
       gameId,
-      casino: casino.trim() || null,
+      casino: casino.trim(),
       description: description.trim(),
-      screenshotUrl: screenshotUrl.trim() || null,
+      screenshotUrl: screenshotUrl.trim(),
       status,
     })
+    setIsSubmitting(false)
     onClose()
   }
 
   if (!isOpen || !bug) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg w-full max-w-3xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
-          <h2 className="font-semibold text-gray-900 dark:text-white">Edit Bug</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded" aria-label="Close">
-            <X size={18} className="text-gray-500" />
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Bug</h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Game</label>
-              <select
-                value={gameId}
-                onChange={(e) => setGameId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select a game</option>
-                {games.map((game) => (
-                  <option key={game.id} value={game.id}>{game.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Casino</label>
-              <input
-                type="text"
-                value={casino}
-                onChange={(e) => setCasino(e.target.value)}
-                placeholder="Enter casino name..."
-                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          {/* Game Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Game <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={gameId}
+              onChange={(e) => setGameId(e.target.value)}
+              required
+              className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <option value="">Select a game</option>
+              {games.map((game) => (
+                <option key={game.id} value={game.id}>
+                  {game.name}
+                </option>
+              ))}
+            </select>
           </div>
 
+          {/* Casino */}
           <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the bug..."
-              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none"
-              required
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Casino
+            </label>
+            <input
+              type="text"
+              value={casino}
+              onChange={(e) => setCasino(e.target.value)}
+              placeholder="Enter casino name"
+              className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Screenshot/Video URL</label>
-              <input
-                type="url"
-                value={screenshotUrl}
-                onChange={(e) => setScreenshotUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Status</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as BugStatus)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="open">Open</option>
-                <option value="in-progress">In Progress</option>
-                <option value="done">Done</option>
-                <option value="wont-fix">Won't Fix</option>
-              </select>
-            </div>
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Description <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              rows={4}
+              placeholder="Describe the bug in detail..."
+              className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+            />
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700">
+          {/* Screenshot URL */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Screenshot URL
+            </label>
+            <input
+              type="url"
+              value={screenshotUrl}
+              onChange={(e) => setScreenshotUrl(e.target.value)}
+              placeholder="https://example.com/screenshot.png"
+              className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Status
+            </label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as BugStatus)}
+              className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <option value="open">Open</option>
+              <option value="in-progress">In Progress</option>
+              <option value="done">Done</option>
+              <option value="wont-fix">Won't Fix</option>
+            </select>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+            >
               Cancel
             </button>
-            <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              Save
+            <button
+              type="submit"
+              disabled={isSubmitting || !gameId || !description.trim()}
+              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>

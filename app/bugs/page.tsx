@@ -1,225 +1,252 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Plus, Bug, ClipboardCheck, Share2 } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react"
+import { Plus, Bug, AlertCircle, Clock, CheckCircle, RefreshCw, Share2 } from "lucide-react"
+import { useGames } from "@/hooks/use-games"
 import { useBugs } from "@/hooks/use-bugs"
-import { encodeShareFilters } from "@/lib/share-utils"
 import { BugsTable } from "@/components/bugs-table"
 import { AddBugModal } from "@/components/add-bug-modal"
 import { EditBugModal } from "@/components/edit-bug-modal"
 import { ConfirmModal } from "@/components/confirm-modal"
 import { ShareModal } from "@/components/share-modal"
-import type { Game } from "@/types/checklist"
+import { encodeShareFilters } from "@/lib/share-utils"
 import type { Bug as BugType, BugStatus } from "@/types/bugs"
 
-const statusLabels: Record<string, string> = {
-  open: "Open",
-  "in-progress": "In Progress",
-  done: "Done",
-  "wont-fix": "Won't Fix",
-}
-
 export default function BugsPage() {
-  const { bugs, isLoading, addBug, updateBug, deleteBug } = useBugs()
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editModal, setEditModal] = useState<{ isOpen: boolean; bug: BugType | null }>({
-    isOpen: false,
-    bug: null,
-  })
-  const [games, setGames] = useState<Game[]>([])
-  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; bugId: string | null }>({
-    isOpen: false,
-    bugId: null,
-  })
-  const [shareModal, setShareModal] = useState<{ isOpen: boolean; url: string; filters: { gameName?: string; status?: string; search?: string } }>({
-    isOpen: false,
-    url: "",
-    filters: {},
-  })
+  const { games, isLoading: gamesLoading } = useGames()
+  const { bugs, isLoading: bugsLoading, addBug, updateBug, deleteBug, refreshBugs } = useBugs()
+  
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [selectedBug, setSelectedBug] = useState<BugType | null>(null)
+  const [bugToDelete, setBugToDelete] = useState<string | null>(null)
   const [currentFilters, setCurrentFilters] = useState({ gameId: "all", status: "all", search: "" })
 
-  useEffect(() => {
-    // Fetch games for the dropdown
-    fetch("/api/games")
-      .then((res) => res.json())
-      .then((data) => setGames(data))
-      .catch((err) => console.error("Error fetching games:", err))
-  }, [])
-
-  const handleAddBug = async (bugData: {
+  const handleAddBug = async (data: {
     gameId: string
-    casino: string | null
+    casino: string
     description: string
-    screenshotUrl: string | null
-    status: string
+    screenshotUrl: string
+    status: BugStatus
   }) => {
     await addBug({
-      gameId: bugData.gameId,
-      casino: bugData.casino,
-      description: bugData.description,
-      screenshotUrl: bugData.screenshotUrl,
-      status: bugData.status as any,
+      gameId: data.gameId,
+      casino: data.casino || null,
+      description: data.description,
+      screenshotUrl: data.screenshotUrl || null,
+      status: data.status,
       devStatus: "pending",
       devComment: null,
     })
   }
 
-  const handleUpdateStatus = async (bugId: string, status: string) => {
-    await updateBug(bugId, { status: status as any })
-  }
-
-  const handleEditBug = (bug: BugType) => {
-    setEditModal({ isOpen: true, bug })
-  }
-
-  const handleUpdateBug = async (bugId: string, updates: { gameId: string; casino: string | null; description: string; screenshotUrl: string | null; status: BugStatus }) => {
+  const handleEditBug = async (bugId: string, data: {
+    gameId: string
+    casino: string
+    description: string
+    screenshotUrl: string
+    status: BugStatus
+  }) => {
     await updateBug(bugId, {
-      gameId: updates.gameId,
-      casino: updates.casino,
-      description: updates.description,
-      screenshotUrl: updates.screenshotUrl,
-      status: updates.status,
+      gameId: data.gameId,
+      casino: data.casino || null,
+      description: data.description,
+      screenshotUrl: data.screenshotUrl || null,
+      status: data.status,
     })
   }
 
-  const handleDeleteBug = (bugId: string) => {
-    setDeleteConfirm({ isOpen: true, bugId })
+  const handleUpdateStatus = async (bugId: string, status: BugStatus) => {
+    await updateBug(bugId, { status })
   }
 
-  const confirmDeleteBug = async () => {
-    if (deleteConfirm.bugId) {
-      await deleteBug(deleteConfirm.bugId)
+  const handleDeleteClick = (bugId: string) => {
+    setBugToDelete(bugId)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (bugToDelete) {
+      await deleteBug(bugToDelete)
+      setBugToDelete(null)
     }
+    setIsDeleteModalOpen(false)
   }
 
-  const handleShareLink = () => {
-    const filters: { gameId?: string; status?: string; search?: string } = {}
-    if (currentFilters.gameId !== "all") filters.gameId = currentFilters.gameId
-    if (currentFilters.status !== "all") filters.status = currentFilters.status
-    if (currentFilters.search) filters.search = currentFilters.search
-    
-    const hasFilters = Object.keys(filters).length > 0
-    const encoded = hasFilters ? encodeShareFilters(filters) : ""
-    const viewUrl = `${window.location.origin}/bugs-view${encoded ? `?f=${encoded}` : ""}`
-    
-    // Get display names for filters
-    const gameName = currentFilters.gameId !== "all" 
-      ? games.find(g => g.id === currentFilters.gameId)?.name 
-      : undefined
-    const statusLabel = currentFilters.status !== "all" 
-      ? statusLabels[currentFilters.status] || currentFilters.status
-      : undefined
-    
-    setShareModal({
-      isOpen: true,
-      url: viewUrl,
-      filters: {
-        gameName,
-        status: statusLabel,
-        search: currentFilters.search || undefined,
-      },
-    })
+  const handleEditClick = (bug: BugType) => {
+    setSelectedBug(bug)
+    setIsEditModalOpen(true)
   }
+
+  // Filter bugs based on current filters for stats
+  const filteredBugs = bugs.filter((bug) => {
+    const matchesSearch =
+      currentFilters.search === "" ||
+      bug.description.toLowerCase().includes(currentFilters.search.toLowerCase()) ||
+      bug.gameName?.toLowerCase().includes(currentFilters.search.toLowerCase())
+    const matchesStatus = currentFilters.status === "all" || bug.status === currentFilters.status
+    const matchesGame = currentFilters.gameId === "all" || bug.gameId === currentFilters.gameId
+    return matchesSearch && matchesStatus && matchesGame
+  })
+
+  // Calculate stats based on filtered data
+  const openCount = filteredBugs.filter((b) => b.status === "open").length
+  const inProgressCount = filteredBugs.filter((b) => b.status === "in-progress").length
+  const doneCount = filteredBugs.filter((b) => b.status === "done").length
+  const totalCount = filteredBugs.length
+
+  // Generate share URL
+  const selectedGame = games.find(g => g.id === currentFilters.gameId)
+  const shareUrl = typeof window !== "undefined" 
+    ? `${window.location.origin}/bugs-view?data=${encodeShareFilters({
+        gameId: currentFilters.gameId,
+        status: currentFilters.status,
+        search: currentFilters.search,
+      })}`
+    : ""
+
+  const isLoading = gamesLoading || bugsLoading
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
-        <div className="px-4 sm:px-8 py-4 sm:py-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
-                <Bug className="w-5 h-5 sm:w-7 sm:h-7 text-red-600 dark:text-red-400" />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Bugs & Errors</h1>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Track and manage reported issues</p>
-              </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+            <Bug className="w-5 h-5 text-red-500" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Bugs & Errors</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Track and manage bugs across all games</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => refreshBugs()}
+            disabled={isLoading}
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50"
+            title="Refresh"
+          >
+            <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+          <button
+            onClick={() => setIsShareModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Share</span>
+          </button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Add Bug</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center">
+              <Bug className="w-5 h-5 text-gray-500" />
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Link
-                href="/"
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <ClipboardCheck className="w-4 h-4" />
-                <span className="hidden sm:inline">Checklist</span>
-              </Link>
-              <button
-                onClick={handleShareLink}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg transition-colors"
-                title="Share bugs view"
-              >
-                <Share2 className="w-4 h-4" />
-                <span className="hidden sm:inline">Share</span>
-              </button>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Add Bug</span>
-              </button>
+            <div>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalCount}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Bugs</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-red-500">{openCount}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Open</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-yellow-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-yellow-500">{inProgressCount}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">In Progress</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-green-500">{doneCount}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Done</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4 sm:p-8">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-red-200 dark:border-red-800 border-t-red-600 dark:border-t-red-400 rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-500 dark:text-gray-400">Loading bugs...</p>
-            </div>
-          </div>
-        ) : (
-          <BugsTable
-            bugs={bugs}
-            games={games.map(g => ({ id: g.id, name: g.name }))}
-            onUpdateStatus={handleUpdateStatus}
-            onDeleteBug={handleDeleteBug}
-            onEditBug={handleEditBug}
-            onFiltersChange={setCurrentFilters}
-          />
-        )}
-      </div>
+      {/* Table */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
+        </div>
+      ) : (
+        <BugsTable
+          bugs={bugs}
+          games={games.map(g => ({ id: g.id, name: g.name }))}
+          onUpdateStatus={handleUpdateStatus}
+          onDeleteBug={handleDeleteClick}
+          onEditBug={handleEditClick}
+          onFiltersChange={setCurrentFilters}
+        />
+      )}
 
-      {/* Add Bug Modal */}
+      {/* Modals */}
       <AddBugModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddBug}
-        games={games}
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdd={handleAddBug}
+        games={games.map(g => ({ id: g.id, name: g.name }))}
       />
 
-      {/* Edit Bug Modal */}
       <EditBugModal
-        isOpen={editModal.isOpen}
-        onClose={() => setEditModal({ isOpen: false, bug: null })}
-        onSubmit={handleUpdateBug}
-        bug={editModal.bug}
-        games={games}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onEdit={handleEditBug}
+        bug={selectedBug}
+        games={games.map(g => ({ id: g.id, name: g.name }))}
       />
 
-      {/* Delete Confirmation Modal */}
       <ConfirmModal
-        isOpen={deleteConfirm.isOpen}
-        onClose={() => setDeleteConfirm({ isOpen: false, bugId: null })}
-        onConfirm={confirmDeleteBug}
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
         title="Delete Bug"
         message="Are you sure you want to delete this bug? This action cannot be undone."
-        confirmText="Delete Bug"
+        confirmText="Delete"
         confirmColor="red"
       />
 
-      {/* Share Modal */}
       <ShareModal
-        isOpen={shareModal.isOpen}
-        onClose={() => setShareModal({ isOpen: false, url: "", filters: {} })}
-        shareUrl={shareModal.url}
-        filters={shareModal.filters}
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        shareUrl={shareUrl}
+        filters={{
+          gameName: selectedGame?.name || (currentFilters.gameId === "all" ? "All Games" : ""),
+          status: currentFilters.status === "all" ? "All Status" : currentFilters.status,
+          search: currentFilters.search,
+        }}
       />
     </div>
   )

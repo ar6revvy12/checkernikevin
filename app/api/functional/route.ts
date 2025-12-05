@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       precondition: precondition || "",
       test_steps: testSteps,
       expected_result: expectedResult,
-      status: status || "not-running",
+      status: status || "not-tested",
       comments: comments || "",
       created_at: createdAt,
     })

@@ -24,7 +24,7 @@ export function AddFunctionalModal({ isOpen, onClose, onSubmit }: AddFunctionalM
   const [precondition, setPrecondition] = useState("")
   const [testSteps, setTestSteps] = useState("")
   const [expectedResult, setExpectedResult] = useState("")
-  const [status, setStatus] = useState<FunctionalStatus>("not-running")
+  const [status, setStatus] = useState<FunctionalStatus>("not-tested")
   const [comments, setComments] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -147,6 +147,7 @@ export function AddFunctionalModal({ isOpen, onClose, onSubmit }: AddFunctionalM
               onChange={(e) => setStatus(e.target.value as FunctionalStatus)}
               className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
+              <option value="not-tested">Not Tested</option>
               <option value="running">Running</option>
               <option value="not-running">Not Running</option>
             </select>

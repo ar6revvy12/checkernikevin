@@ -23,7 +23,7 @@ export function EditRegressionModal({ isOpen, onClose, onSubmit, test }: EditReg
   const [priority, setPriority] = useState<RegressionPriority>("medium")
   const [expectedResult, setExpectedResult] = useState("")
   const [actualResult, setActualResult] = useState("")
-  const [status, setStatus] = useState<RegressionStatus>("pass")
+  const [status, setStatus] = useState<RegressionStatus>("not-tested")
   const [comments, setComments] = useState("")
 
   useEffect(() => {
@@ -149,6 +149,7 @@ export function EditRegressionModal({ isOpen, onClose, onSubmit, test }: EditReg
               onChange={(e) => setStatus(e.target.value as RegressionStatus)}
               className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
+              <option value="not-tested">Not Tested</option>
               <option value="pass">Pass</option>
               <option value="fail">Fail</option>
             </select>

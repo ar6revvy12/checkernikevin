@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useRef, useEffect, useMemo } from "react"
-import { AlertCircle, ExternalLink, ChevronDown, MessageSquare, Search, Filter } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { AlertCircle, ExternalLink, ChevronDown, MessageSquare } from "lucide-react"
 import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
 
 interface BugsTableViewOnlyProps {
@@ -200,15 +200,6 @@ export function BugsTableViewOnly({ bugs, games, initialGameFilter = "all", init
   const [searchQuery, setSearchQuery] = useState(initialSearch)
   const [statusFilter, setStatusFilter] = useState<BugStatus | "all">(initialStatusFilter as BugStatus | "all")
   const [gameFilter, setGameFilter] = useState<string>(initialGameFilter)
-  const [casinoFilter, setCasinoFilter] = useState<string>("all")
-
-  // Get unique casinos from bugs for filter dropdown
-  const uniqueCasinos = useMemo(() => {
-    const casinos = bugs
-      .map((bug) => bug.casino)
-      .filter((casino): casino is string => casino !== null && casino !== undefined && casino.trim() !== "")
-    return [...new Set(casinos)].sort()
-  }, [bugs])
 
   const filteredBugs = bugs.filter((bug) => {
     const matchesSearch =
@@ -216,8 +207,7 @@ export function BugsTableViewOnly({ bugs, games, initialGameFilter = "all", init
       bug.gameName?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || bug.status === statusFilter
     const matchesGame = gameFilter === "all" || bug.gameId === gameFilter
-    const matchesCasino = casinoFilter === "all" || bug.casino === casinoFilter
-    return matchesSearch && matchesStatus && matchesGame && matchesCasino
+    return matchesSearch && matchesStatus && matchesGame
   })
 
   const formatDate = (timestamp: number) => {
@@ -256,77 +246,6 @@ export function BugsTableViewOnly({ bugs, games, initialGameFilter = "all", init
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
           <p className="text-xl sm:text-2xl font-bold text-green-500">{doneCount}</p>
           <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Resolved</p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
-        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
-          {/* Search */}
-          <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search bugs..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Filter Row */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            {/* Game Filter */}
-            <div className="flex items-center gap-2 flex-1 sm:flex-initial">
-              <Filter className="w-4 h-4 text-gray-400 hidden sm:block" />
-              <select
-                value={gameFilter}
-                onChange={(e) => setGameFilter(e.target.value)}
-                className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                title="Filter by game"
-                aria-label="Filter by game"
-              >
-                <option value="all">All Games</option>
-                {games.map((game) => (
-                  <option key={game.id} value={game.id}>{game.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as BugStatus | "all")}
-              className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              title="Filter by status"
-              aria-label="Filter by status"
-            >
-              <option value="all">All Status</option>
-              <option value="open">Open</option>
-              <option value="in-progress">In Progress</option>
-              <option value="done">Done</option>
-              <option value="wont-fix">Won't Fix</option>
-            </select>
-
-            {/* Casino Filter */}
-            <select
-              value={casinoFilter}
-              onChange={(e) => setCasinoFilter(e.target.value)}
-              className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              title="Filter by casino"
-              aria-label="Filter by casino"
-            >
-              <option value="all">All Casinos</option>
-              {uniqueCasinos.map((casino) => (
-                <option key={casino} value={casino}>{casino}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Results count */}
-          <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 sm:ml-auto text-center sm:text-right">
-            {filteredBugs.length} of {bugs.length} bugs
-          </span>
         </div>
       </div>
 

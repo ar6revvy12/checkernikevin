@@ -1,3 +1,5 @@
+export type FunctionalStatus = "running" | "not-running" | "not-tested"
+
 export interface FunctionalTest {
   id: string
   gameId: string
@@ -8,10 +10,8 @@ export interface FunctionalTest {
   precondition: string
   testSteps: string
   expectedResult: string
-  status: "running" | "not-running"
+  status: FunctionalStatus
   comments: string
   createdAt: number
-  updatedAt: number
+  updatedAt?: number
 }
-
-export type FunctionalStatus = FunctionalTest["status"]

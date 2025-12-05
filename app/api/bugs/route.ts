@@ -1,18 +1,26 @@
 import { createClient } from "@/lib/server"
 import { NextResponse } from "next/server"
 
-// GET all bugs
-export async function GET() {
+// GET all bugs (optionally filtered by gameId)
+export async function GET(request: Request) {
   try {
     const supabase = await createClient()
+    const { searchParams } = new URL(request.url)
+    const gameId = searchParams.get("gameId")
 
-    const { data: bugs, error } = await supabase
+    let query = supabase
       .from("bugs")
       .select(`
         *,
         games (name)
       `)
       .order("created_at", { ascending: false })
+
+    if (gameId) {
+      query = query.eq("game_id", gameId)
+    }
+
+    const { data: bugs, error } = await query
 
     if (error) {
       console.error("Error fetching bugs:", error)
@@ -25,7 +33,7 @@ export async function GET() {
       gameName: bug.games?.name || "Unknown Game",
       casino: bug.casino || null,
       description: bug.description,
-      screenshotUrl: bug.screenshot_url,
+      screenshotUrl: bug.screenshot_url || null,
       status: bug.status,
       devStatus: bug.dev_status || "pending",
       devComment: bug.dev_comment || null,
@@ -46,7 +54,7 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const body = await request.json()
 
-    const { id, gameId, casino, description, screenshotUrl, status, createdAt } = body
+    const { id, gameId, casino, description, screenshotUrl, status, devStatus, createdAt } = body
 
     const { error } = await supabase.from("bugs").insert({
       id,
@@ -55,6 +63,7 @@ export async function POST(request: Request) {
       description,
       screenshot_url: screenshotUrl || null,
       status: status || "open",
+      dev_status: devStatus || "pending",
       created_at: createdAt,
     })
 

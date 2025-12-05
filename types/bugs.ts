@@ -1,3 +1,6 @@
+export type BugStatus = "open" | "in-progress" | "done" | "wont-fix"
+export type DevStatus = "pending" | "in-progress" | "completed" | "needs-info"
+
 export interface Bug {
   id: string
   gameId: string
@@ -5,12 +8,9 @@ export interface Bug {
   casino: string | null
   description: string
   screenshotUrl: string | null
-  status: "open" | "in-progress" | "done" | "wont-fix"
-  devStatus: "pending" | "in-progress" | "completed" | "needs-info"
+  status: BugStatus
+  devStatus: DevStatus
   devComment: string | null
   createdAt: number
-  updatedAt: number
+  updatedAt?: number
 }
-
-export type BugStatus = Bug["status"]
-export type DevStatus = Bug["devStatus"]

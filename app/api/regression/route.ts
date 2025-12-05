@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       priority: priority || "medium",
       expected_result: expectedResult,
       actual_result: actualResult,
-      status: status || "pass",
+      status: status || "not-tested",
       comments: comments || "",
       created_at: createdAt,
     })

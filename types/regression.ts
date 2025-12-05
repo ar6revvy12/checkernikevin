@@ -1,17 +1,17 @@
+export type RegressionStatus = "pass" | "fail" | "not-tested"
+export type RegressionPriority = "low" | "medium" | "high" | "critical"
+
 export interface RegressionTest {
   id: string
   gameId: string
   gameName?: string
   testId: string
   testCaseDescription: string
-  priority: "low" | "medium" | "high" | "critical"
+  priority: RegressionPriority
   expectedResult: string
   actualResult: string
-  status: "pass" | "fail"
+  status: RegressionStatus
   comments: string
   createdAt: number
-  updatedAt: number
+  updatedAt?: number
 }
-
-export type RegressionStatus = RegressionTest["status"]
-export type RegressionPriority = RegressionTest["priority"]

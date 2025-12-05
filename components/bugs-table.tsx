@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, useMemo } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Trash2, Search, Pencil, ChevronDown, Filter, AlertCircle, ExternalLink } from "lucide-react"
 import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
 
@@ -128,15 +128,6 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<BugStatus | "all">("all")
   const [gameFilter, setGameFilter] = useState<string>("all")
-  const [casinoFilter, setCasinoFilter] = useState<string>("all")
-
-  // Get unique casinos from bugs for filter dropdown
-  const uniqueCasinos = useMemo(() => {
-    const casinos = bugs
-      .map((bug) => bug.casino)
-      .filter((casino): casino is string => casino !== null && casino !== undefined && casino.trim() !== "")
-    return [...new Set(casinos)].sort()
-  }, [bugs])
 
   // Notify parent of filter changes
   useEffect(() => {
@@ -153,8 +144,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
       bug.gameName?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || bug.status === statusFilter
     const matchesGame = gameFilter === "all" || bug.gameId === gameFilter
-    const matchesCasino = casinoFilter === "all" || bug.casino === casinoFilter
-    return matchesSearch && matchesStatus && matchesGame && matchesCasino
+    return matchesSearch && matchesStatus && matchesGame
   })
 
   const formatDate = (timestamp: number) => {
@@ -165,37 +155,8 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
     })
   }
 
-  // Bugs filtered by game only (for stats)
-  const gameFilteredBugs = gameFilter === "all" ? bugs : bugs.filter((b) => b.gameId === gameFilter)
-
-  // Stats based on game filter
-  const totalCount = gameFilteredBugs.length
-  const openCount = gameFilteredBugs.filter((b) => b.status === "open").length
-  const inProgressCount = gameFilteredBugs.filter((b) => b.status === "in-progress").length
-  const doneCount = gameFilteredBugs.filter((b) => b.status === "done").length
-
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
-          <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{totalCount}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Total Bugs</p>
-        </div>
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
-          <p className="text-xl sm:text-2xl font-bold text-red-500">{openCount}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Open</p>
-        </div>
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
-          <p className="text-xl sm:text-2xl font-bold text-yellow-500">{inProgressCount}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">In Progress</p>
-        </div>
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
-          <p className="text-xl sm:text-2xl font-bold text-green-500">{doneCount}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Resolved</p>
-        </div>
-      </div>
-
       {/* Filters */}
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
@@ -243,20 +204,6 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               <option value="in-progress">In Progress</option>
               <option value="done">Done</option>
               <option value="wont-fix">Won't Fix</option>
-            </select>
-
-            {/* Casino Filter */}
-            <select
-              value={casinoFilter}
-              onChange={(e) => setCasinoFilter(e.target.value)}
-              className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              title="Filter by casino"
-              aria-label="Filter by casino"
-            >
-              <option value="all">All Casinos</option>
-              {uniqueCasinos.map((casino) => (
-                <option key={casino} value={casino}>{casino}</option>
-              ))}
             </select>
           </div>
 

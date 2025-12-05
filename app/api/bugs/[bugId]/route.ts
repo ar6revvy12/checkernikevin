@@ -7,8 +7,8 @@ export async function GET(
   { params }: { params: Promise<{ bugId: string }> }
 ) {
   try {
-    const { bugId } = await params
     const supabase = await createClient()
+    const { bugId } = await params
 
     const { data: bug, error } = await supabase
       .from("bugs")
@@ -20,6 +20,7 @@ export async function GET(
       .single()
 
     if (error) {
+      console.error("Error fetching bug:", error)
       return NextResponse.json({ error: "Bug not found" }, { status: 404 })
     }
 
@@ -29,7 +30,7 @@ export async function GET(
       gameName: bug.games?.name || "Unknown Game",
       casino: bug.casino || null,
       description: bug.description,
-      screenshotUrl: bug.screenshot_url,
+      screenshotUrl: bug.screenshot_url || null,
       status: bug.status,
       devStatus: bug.dev_status || "pending",
       devComment: bug.dev_comment || null,
@@ -48,21 +49,21 @@ export async function PATCH(
   { params }: { params: Promise<{ bugId: string }> }
 ) {
   try {
-    const { bugId } = await params
     const supabase = await createClient()
+    const { bugId } = await params
     const body = await request.json()
 
     const updates: any = {
       updated_at: Date.now(),
     }
 
+    if (body.gameId !== undefined) updates.game_id = body.gameId
+    if (body.casino !== undefined) updates.casino = body.casino
     if (body.description !== undefined) updates.description = body.description
     if (body.screenshotUrl !== undefined) updates.screenshot_url = body.screenshotUrl
     if (body.status !== undefined) updates.status = body.status
     if (body.devStatus !== undefined) updates.dev_status = body.devStatus
     if (body.devComment !== undefined) updates.dev_comment = body.devComment
-    if (body.gameId !== undefined) updates.game_id = body.gameId
-    if (body.casino !== undefined) updates.casino = body.casino
 
     const { error } = await supabase
       .from("bugs")
@@ -84,8 +85,8 @@ export async function DELETE(
   { params }: { params: Promise<{ bugId: string }> }
 ) {
   try {
-    const { bugId } = await params
     const supabase = await createClient()
+    const { bugId } = await params
 
     const { error } = await supabase
       .from("bugs")
