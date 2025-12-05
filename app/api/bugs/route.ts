@@ -27,6 +27,7 @@ export async function GET() {
       screenshotUrl: bug.screenshot_url,
       status: bug.status,
       devStatus: bug.dev_status || "pending",
+      devComment: bug.dev_comment || null,
       createdAt: bug.created_at,
       updatedAt: bug.updated_at,
     })) || []

@@ -254,13 +254,14 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Media</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">QA Status</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dev Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dev Comment</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
             {filteredBugs.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center">
+                <td colSpan={8} className="px-4 py-12 text-center">
                   <AlertCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
                   <p className="text-gray-500 dark:text-gray-400">No bugs found</p>
                 </td>
@@ -304,6 +305,11 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                     <div className="flex justify-center">
                       <DevStatusBadge status={bug.devStatus} />
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 max-w-[200px] truncate whitespace-pre-wrap" title={bug.devComment || ""}>
+                      {bug.devComment || <span className="text-gray-300 dark:text-gray-600">—</span>}
+                    </p>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-1">
@@ -357,6 +363,12 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                 <span className="text-xs text-gray-500 dark:text-gray-400">Dev Status:</span>
                 <DevStatusBadge status={bug.devStatus} />
               </div>
+              {bug.devComment && (
+                <div className="mb-3 p-2 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Dev Comment:</span>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{bug.devComment}</p>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 {bug.screenshotUrl ? (
                   <a

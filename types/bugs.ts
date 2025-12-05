@@ -6,6 +6,7 @@ export interface Bug {
   screenshotUrl: string | null
   status: "open" | "in-progress" | "done" | "wont-fix"
   devStatus: "pending" | "in-progress" | "completed" | "needs-info"
+  devComment: string | null
   createdAt: number
   updatedAt: number
 }

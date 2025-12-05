@@ -59,6 +59,7 @@ export default function BugsPage() {
       screenshotUrl: bugData.screenshotUrl,
       status: bugData.status as any,
       devStatus: "pending",
+      devComment: null,
     })
   }
 

@@ -31,6 +31,7 @@ export async function GET(
       screenshotUrl: bug.screenshot_url,
       status: bug.status,
       devStatus: bug.dev_status || "pending",
+      devComment: bug.dev_comment || null,
       createdAt: bug.created_at,
       updatedAt: bug.updated_at,
     })
@@ -58,6 +59,7 @@ export async function PATCH(
     if (body.screenshotUrl !== undefined) updates.screenshot_url = body.screenshotUrl
     if (body.status !== undefined) updates.status = body.status
     if (body.devStatus !== undefined) updates.dev_status = body.devStatus
+    if (body.devComment !== undefined) updates.dev_comment = body.devComment
     if (body.gameId !== undefined) updates.game_id = body.gameId
 
     const { error } = await supabase

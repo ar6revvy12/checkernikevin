@@ -41,12 +41,17 @@ function BugsViewContent() {
       .catch((err) => console.error("Error fetching games:", err))
   }, [])
 
-  const handleUpdateDevStatus = async (bugId: string, devStatus: DevStatus) => {
+  const handleUpdateDevStatus = async (bugId: string, devStatus: DevStatus, devComment?: string) => {
     try {
+      const updateData: { devStatus: DevStatus; devComment?: string } = { devStatus }
+      if (devComment !== undefined) {
+        updateData.devComment = devComment
+      }
+
       const response = await fetch(`/api/bugs/${bugId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ devStatus }),
+        body: JSON.stringify(updateData),
       })
 
       if (!response.ok) throw new Error("Failed to update dev status")
@@ -54,7 +59,7 @@ function BugsViewContent() {
       // Update local state
       setBugs((prev) =>
         prev.map((bug) =>
-          bug.id === bugId ? { ...bug, devStatus } : bug
+          bug.id === bugId ? { ...bug, devStatus, ...(devComment !== undefined && { devComment }) } : bug
         )
       )
     } catch (err) {
