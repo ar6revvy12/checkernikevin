@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Trash2, Search, Pencil, ChevronDown, Filter, AlertCircle, ExternalLink } from "lucide-react"
-import type { Bug, BugStatus } from "@/types/bugs"
+import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
 
 interface BugsTableProps {
   bugs: Bug[]
@@ -18,6 +18,13 @@ const statusConfig: Record<BugStatus, { bg: string; text: string; dot: string; l
   "in-progress": { bg: "bg-yellow-500/10", text: "text-yellow-500", dot: "bg-yellow-500", label: "In Progress" },
   done: { bg: "bg-green-500/10", text: "text-green-500", dot: "bg-green-500", label: "Done" },
   "wont-fix": { bg: "bg-gray-500/10", text: "text-gray-500", dot: "bg-gray-500", label: "Won't Fix" },
+}
+
+const devStatusConfig: Record<DevStatus, { bg: string; text: string; dot: string; label: string }> = {
+  pending: { bg: "bg-gray-500/10", text: "text-gray-500", dot: "bg-gray-500", label: "Pending" },
+  "in-progress": { bg: "bg-blue-500/10", text: "text-blue-500", dot: "bg-blue-500", label: "In Progress" },
+  completed: { bg: "bg-green-500/10", text: "text-green-500", dot: "bg-green-500", label: "Completed" },
+  "needs-info": { bg: "bg-orange-500/10", text: "text-orange-500", dot: "bg-orange-500", label: "Needs Info" },
 }
 
 const statusOptions: BugStatus[] = ["open", "in-progress", "done", "wont-fix"]
@@ -103,6 +110,17 @@ function StatusDropdown({ value, onChange }: { value: BugStatus; onChange: (stat
         </div>
       )}
     </div>
+  )
+}
+
+// Dev Status Badge (read-only)
+function DevStatusBadge({ status }: { status: DevStatus }) {
+  const config = devStatusConfig[status || "pending"]
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${config.bg} ${config.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+      {config.label}
+    </span>
   )
 }
 
@@ -234,14 +252,15 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Game</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Media</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">QA Status</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dev Status</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
             {filteredBugs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center">
+                <td colSpan={7} className="px-4 py-12 text-center">
                   <AlertCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
                   <p className="text-gray-500 dark:text-gray-400">No bugs found</p>
                 </td>
@@ -279,6 +298,11 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                         value={bug.status}
                         onChange={(status) => onUpdateStatus(bug.id, status)}
                       />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-center">
+                      <DevStatusBadge status={bug.devStatus} />
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -329,6 +353,10 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                 />
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{bug.description}</p>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Dev Status:</span>
+                <DevStatusBadge status={bug.devStatus} />
+              </div>
               <div className="flex items-center justify-between">
                 {bug.screenshotUrl ? (
                   <a

@@ -5,8 +5,10 @@ export interface Bug {
   description: string
   screenshotUrl: string | null
   status: "open" | "in-progress" | "done" | "wont-fix"
+  devStatus: "pending" | "in-progress" | "completed" | "needs-info"
   createdAt: number
   updatedAt: number
 }
 
 export type BugStatus = Bug["status"]
+export type DevStatus = Bug["devStatus"]

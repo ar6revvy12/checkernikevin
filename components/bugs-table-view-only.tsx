@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { AlertCircle, ExternalLink } from "lucide-react"
-import type { Bug, BugStatus } from "@/types/bugs"
+import { AlertCircle, ExternalLink, ChevronDown } from "lucide-react"
+import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
 
 interface BugsTableViewOnlyProps {
   bugs: Bug[]
@@ -10,6 +10,7 @@ interface BugsTableViewOnlyProps {
   initialGameFilter?: string
   initialStatusFilter?: string
   initialSearch?: string
+  onUpdateDevStatus?: (bugId: string, devStatus: DevStatus) => void
 }
 
 const statusConfig: Record<BugStatus, { bg: string; text: string; dot: string; label: string }> = {
@@ -18,6 +19,15 @@ const statusConfig: Record<BugStatus, { bg: string; text: string; dot: string; l
   done: { bg: "bg-green-500/10", text: "text-green-500", dot: "bg-green-500", label: "Done" },
   "wont-fix": { bg: "bg-gray-500/10", text: "text-gray-500", dot: "bg-gray-500", label: "Won't Fix" },
 }
+
+const devStatusConfig: Record<DevStatus, { bg: string; text: string; dot: string; label: string }> = {
+  pending: { bg: "bg-gray-500/10", text: "text-gray-500", dot: "bg-gray-500", label: "Pending" },
+  "in-progress": { bg: "bg-blue-500/10", text: "text-blue-500", dot: "bg-blue-500", label: "In Progress" },
+  completed: { bg: "bg-green-500/10", text: "text-green-500", dot: "bg-green-500", label: "Completed" },
+  "needs-info": { bg: "bg-orange-500/10", text: "text-orange-500", dot: "bg-orange-500", label: "Needs Info" },
+}
+
+const devStatusOptions: DevStatus[] = ["pending", "in-progress", "completed", "needs-info"]
 
 // Expandable Description Component
 function ExpandableDescription({ text, maxLength = 100 }: { text: string; maxLength?: number }) {
@@ -67,7 +77,54 @@ function StatusBadge({ status }: { status: BugStatus }) {
   )
 }
 
-export function BugsTableViewOnly({ bugs, games, initialGameFilter = "all", initialStatusFilter = "all", initialSearch = "" }: BugsTableViewOnlyProps) {
+// Dev Status Dropdown (editable)
+function DevStatusDropdown({ value, onChange }: { value: DevStatus; onChange: (status: DevStatus) => void }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const config = devStatusConfig[value]
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-medium ${config.bg} ${config.text} transition-colors hover:opacity-80`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+        {config.label}
+        <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-[130px] bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-lg overflow-hidden">
+          {devStatusOptions.map((status) => {
+            const opt = devStatusConfig[status]
+            return (
+              <button
+                key={status}
+                onClick={() => { onChange(status); setIsOpen(false) }}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors ${
+                  value === status ? `${opt.bg} ${opt.text}` : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${opt.dot}`} />
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function BugsTableViewOnly({ bugs, games, initialGameFilter = "all", initialStatusFilter = "all", initialSearch = "", onUpdateDevStatus }: BugsTableViewOnlyProps) {
   const [searchQuery, setSearchQuery] = useState(initialSearch)
   const [statusFilter, setStatusFilter] = useState<BugStatus | "all">(initialStatusFilter as BugStatus | "all")
   const [gameFilter, setGameFilter] = useState<string>(initialGameFilter)
@@ -129,13 +186,14 @@ export function BugsTableViewOnly({ bugs, games, initialGameFilter = "all", init
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Game</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Media</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">QA Status</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dev Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
             {filteredBugs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center">
+                <td colSpan={6} className="px-4 py-12 text-center">
                   <AlertCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
                   <p className="text-gray-500 dark:text-gray-400">No bugs found</p>
                 </td>
@@ -172,6 +230,14 @@ export function BugsTableViewOnly({ bugs, games, initialGameFilter = "all", init
                       <StatusBadge status={bug.status} />
                     </div>
                   </td>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-center">
+                      <DevStatusDropdown
+                        value={bug.devStatus || "pending"}
+                        onChange={(devStatus) => onUpdateDevStatus?.(bug.id, devStatus)}
+                      />
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -197,17 +263,28 @@ export function BugsTableViewOnly({ bugs, games, initialGameFilter = "all", init
                 <StatusBadge status={bug.status} />
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{bug.description}</p>
-              {bug.screenshotUrl && (
-                <a
-                  href={bug.screenshotUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  View Media
-                </a>
-              )}
+              <div className="flex items-center justify-between gap-3">
+                {bug.screenshotUrl ? (
+                  <a
+                    href={bug.screenshotUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    View Media
+                  </a>
+                ) : (
+                  <span />
+                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Dev:</span>
+                  <DevStatusDropdown
+                    value={bug.devStatus || "pending"}
+                    onChange={(devStatus) => onUpdateDevStatus?.(bug.id, devStatus)}
+                  />
+                </div>
+              </div>
             </div>
           ))
         )}

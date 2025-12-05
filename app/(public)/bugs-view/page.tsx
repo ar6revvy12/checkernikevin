@@ -6,7 +6,7 @@ import { Bug } from "lucide-react"
 import { BugsTableViewOnly } from "@/components/bugs-table-view-only"
 import { decodeShareFilters } from "@/lib/share-utils"
 import type { Game } from "@/types/checklist"
-import type { Bug as BugType } from "@/types/bugs"
+import type { Bug as BugType, DevStatus } from "@/types/bugs"
 
 function BugsViewContent() {
   const searchParams = useSearchParams()
@@ -41,6 +41,27 @@ function BugsViewContent() {
       .catch((err) => console.error("Error fetching games:", err))
   }, [])
 
+  const handleUpdateDevStatus = async (bugId: string, devStatus: DevStatus) => {
+    try {
+      const response = await fetch(`/api/bugs/${bugId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ devStatus }),
+      })
+
+      if (!response.ok) throw new Error("Failed to update dev status")
+
+      // Update local state
+      setBugs((prev) =>
+        prev.map((bug) =>
+          bug.id === bugId ? { ...bug, devStatus } : bug
+        )
+      )
+    } catch (err) {
+      console.error("Error updating dev status:", err)
+    }
+  }
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -53,11 +74,11 @@ function BugsViewContent() {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Bugs & Errors</h1>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">View reported issues (Read-only)</p>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">View reported issues - Update your Dev Status</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-lg text-xs sm:text-sm font-medium self-start sm:self-auto">
-              View Only Mode
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-xs sm:text-sm font-medium self-start sm:self-auto">
+              Developer View
             </div>
           </div>
         </div>
@@ -79,6 +100,7 @@ function BugsViewContent() {
             initialGameFilter={initialGameFilter}
             initialStatusFilter={initialStatusFilter}
             initialSearch={initialSearch}
+            onUpdateDevStatus={handleUpdateDevStatus}
           />
         )}
       </div>

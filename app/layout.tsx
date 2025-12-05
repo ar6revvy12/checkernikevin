@@ -44,8 +44,10 @@ export default function RootLayout({
         <ThemeProvider>
           <LoadingScreen />
           <Sidebar />
-          <main className="pt-14 lg:pt-0 lg:ml-64">
-            {children}
+          <main className="pt-14 lg:pt-0 lg:ml-64 watermark-bg min-h-screen">
+            <div className="relative z-10">
+              {children}
+            </div>
           </main>
         </ThemeProvider>
         <Analytics />

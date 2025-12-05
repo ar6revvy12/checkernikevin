@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { ClipboardCheck, Bug, Moon, Sun, Menu, X } from "lucide-react"
+import { ClipboardCheck, Bug, Moon, Sun, Menu, X, FlaskConical, RotateCcw } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 
 const navItems = [
@@ -16,6 +17,16 @@ const navItems = [
     href: "/bugs",
     label: "Bugs & Errors",
     icon: Bug,
+  },
+  {
+    href: "/functional",
+    label: "Functional Testing",
+    icon: FlaskConical,
+  },
+  {
+    href: "/regression",
+    label: "Regression Testing",
+    icon: RotateCcw,
   },
 ]
 
@@ -70,10 +81,14 @@ export function Sidebar() {
         } lg:translate-x-0`}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">QA CHECKLIST</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">ni Kevin</p>
+        <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <div className="relative w-full h-12">
+            <Image
+              src="/di-joker-logo.png"
+              alt="DJ Joker Logo"
+              fill
+              className="object-contain object-center"
+            />
           </div>
           {/* Close button for mobile */}
           <button
@@ -128,8 +143,8 @@ export function Sidebar() {
             )}
           </button>
           <div className="text-center space-y-0.5">
-            <p className="text-xs text-gray-400 dark:text-gray-500">Game QA Tool v1.0</p>
-            <p className="text-[10px] text-gray-400 dark:text-gray-600">by jolo</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">QA SHEESH</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-600">by Robert Kevin Ian</p>
           </div>
         </div>
       </aside>

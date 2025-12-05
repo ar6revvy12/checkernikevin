@@ -26,6 +26,7 @@ export async function GET() {
       description: bug.description,
       screenshotUrl: bug.screenshot_url,
       status: bug.status,
+      devStatus: bug.dev_status || "pending",
       createdAt: bug.created_at,
       updatedAt: bug.updated_at,
     })) || []
