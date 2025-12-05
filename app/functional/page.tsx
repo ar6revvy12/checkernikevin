@@ -225,8 +225,7 @@ export default function FunctionalTestingPage() {
         title="Delete Functional Test"
         message="Are you sure you want to delete this functional test? This action cannot be undone."
         confirmText="Delete"
-        cancelText="Cancel"
-        variant="danger"
+        confirmColor="red"
       />
     </div>
   )

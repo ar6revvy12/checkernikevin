@@ -223,8 +223,7 @@ export default function RegressionTestingPage() {
         title="Delete Regression Test"
         message="Are you sure you want to delete this regression test? This action cannot be undone."
         confirmText="Delete"
-        cancelText="Cancel"
-        variant="danger"
+        confirmColor="red"
       />
     </div>
   )
