@@ -2,6 +2,7 @@ export interface Bug {
   id: string
   gameId: string
   gameName?: string
+  casino: string | null
   description: string
   screenshotUrl: string | null
   status: "open" | "in-progress" | "done" | "wont-fix"

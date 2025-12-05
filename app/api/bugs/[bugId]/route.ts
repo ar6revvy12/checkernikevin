@@ -27,6 +27,7 @@ export async function GET(
       id: bug.id,
       gameId: bug.game_id,
       gameName: bug.games?.name || "Unknown Game",
+      casino: bug.casino || null,
       description: bug.description,
       screenshotUrl: bug.screenshot_url,
       status: bug.status,
@@ -61,6 +62,7 @@ export async function PATCH(
     if (body.devStatus !== undefined) updates.dev_status = body.devStatus
     if (body.devComment !== undefined) updates.dev_comment = body.devComment
     if (body.gameId !== undefined) updates.game_id = body.gameId
+    if (body.casino !== undefined) updates.casino = body.casino
 
     const { error } = await supabase
       .from("bugs")

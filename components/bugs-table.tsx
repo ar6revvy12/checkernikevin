@@ -250,6 +250,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
             <tr className="border-b border-gray-200 dark:border-slate-700">
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Game</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Casino</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Media</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">QA Status</th>
@@ -261,7 +262,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
             {filteredBugs.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-12 text-center">
+                <td colSpan={9} className="px-4 py-12 text-center">
                   <AlertCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
                   <p className="text-gray-500 dark:text-gray-400">No bugs found</p>
                 </td>
@@ -274,6 +275,9 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-sm font-medium text-gray-900 dark:text-white">{bug.gameName}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">{bug.casino || <span className="text-gray-300 dark:text-gray-600">—</span>}</span>
                   </td>
                   <td className="px-4 py-3">
                     <ExpandableDescription text={bug.description} maxLength={80} />
@@ -351,6 +355,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{bug.gameName}</p>
+                  {bug.casino && <p className="text-xs text-blue-500 dark:text-blue-400">{bug.casino}</p>}
                   <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(bug.createdAt)}</p>
                 </div>
                 <StatusDropdown

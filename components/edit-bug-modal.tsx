@@ -8,13 +8,14 @@ import type { Bug as BugType, BugStatus } from "@/types/bugs"
 interface EditBugModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (bugId: string, updates: { gameId: string; description: string; screenshotUrl: string | null; status: BugStatus }) => void
+  onSubmit: (bugId: string, updates: { gameId: string; casino: string | null; description: string; screenshotUrl: string | null; status: BugStatus }) => void
   bug: BugType | null
   games: Game[]
 }
 
 export function EditBugModal({ isOpen, onClose, onSubmit, bug, games }: EditBugModalProps) {
   const [gameId, setGameId] = useState("")
+  const [casino, setCasino] = useState("")
   const [description, setDescription] = useState("")
   const [screenshotUrl, setScreenshotUrl] = useState("")
   const [status, setStatus] = useState<BugStatus>("open")
@@ -22,6 +23,7 @@ export function EditBugModal({ isOpen, onClose, onSubmit, bug, games }: EditBugM
   useEffect(() => {
     if (isOpen && bug) {
       setGameId(bug.gameId)
+      setCasino(bug.casino || "")
       setDescription(bug.description)
       setScreenshotUrl(bug.screenshotUrl || "")
       setStatus(bug.status)
@@ -33,6 +35,7 @@ export function EditBugModal({ isOpen, onClose, onSubmit, bug, games }: EditBugM
     if (!bug || !gameId || !description.trim()) return
     onSubmit(bug.id, {
       gameId,
+      casino: casino.trim() || null,
       description: description.trim(),
       screenshotUrl: screenshotUrl.trim() || null,
       status,
@@ -53,19 +56,32 @@ export function EditBugModal({ isOpen, onClose, onSubmit, bug, games }: EditBugM
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Game</label>
-            <select
-              value={gameId}
-              onChange={(e) => setGameId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Select a game</option>
-              {games.map((game) => (
-                <option key={game.id} value={game.id}>{game.name}</option>
-              ))}
-            </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Game</label>
+              <select
+                value={gameId}
+                onChange={(e) => setGameId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select a game</option>
+                {games.map((game) => (
+                  <option key={game.id} value={game.id}>{game.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Casino</label>
+              <input
+                type="text"
+                value={casino}
+                onChange={(e) => setCasino(e.target.value)}
+                placeholder="Enter casino name..."
+                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
 
           <div>
@@ -79,29 +95,31 @@ export function EditBugModal({ isOpen, onClose, onSubmit, bug, games }: EditBugM
             />
           </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Screenshot/Video URL</label>
-            <input
-              type="url"
-              value={screenshotUrl}
-              onChange={(e) => setScreenshotUrl(e.target.value)}
-              placeholder="https://..."
-              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Screenshot/Video URL</label>
+              <input
+                type="url"
+                value={screenshotUrl}
+                onChange={(e) => setScreenshotUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Status</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as BugStatus)}
-              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="open">Open</option>
-              <option value="in-progress">In Progress</option>
-              <option value="done">Done</option>
-              <option value="wont-fix">Won't Fix</option>
-            </select>
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as BugStatus)}
+                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="open">Open</option>
+                <option value="in-progress">In Progress</option>
+                <option value="done">Done</option>
+                <option value="wont-fix">Won't Fix</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex gap-2 pt-2">

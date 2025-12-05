@@ -7,12 +7,13 @@ import type { Game } from "@/types/checklist"
 interface AddBugModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (bug: { gameId: string; description: string; screenshotUrl: string | null; status: string }) => void
+  onSubmit: (bug: { gameId: string; casino: string | null; description: string; screenshotUrl: string | null; status: string }) => void
   games: Game[]
 }
 
 export function AddBugModal({ isOpen, onClose, onSubmit, games }: AddBugModalProps) {
   const [gameId, setGameId] = useState("")
+  const [casino, setCasino] = useState("")
   const [description, setDescription] = useState("")
   const [screenshotUrl, setScreenshotUrl] = useState("")
   const [status, setStatus] = useState("open")
@@ -29,12 +30,14 @@ export function AddBugModal({ isOpen, onClose, onSubmit, games }: AddBugModalPro
 
     onSubmit({
       gameId,
+      casino: casino.trim() || null,
       description: description.trim(),
       screenshotUrl: screenshotUrl.trim() || null,
       status,
     })
 
     setGameId("")
+    setCasino("")
     setDescription("")
     setScreenshotUrl("")
     setStatus("open")
@@ -58,21 +61,34 @@ export function AddBugModal({ isOpen, onClose, onSubmit, games }: AddBugModalPro
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Game</label>
-            <select
-              value={gameId}
-              onChange={(e) => setGameId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select a game</option>
-              {games.map((game) => (
-                <option key={game.id} value={game.id}>
-                  {game.name}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Game</label>
+              <select
+                value={gameId}
+                onChange={(e) => setGameId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="">Select a game</option>
+                {games.map((game) => (
+                  <option key={game.id} value={game.id}>
+                    {game.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Casino</label>
+              <input
+                type="text"
+                value={casino}
+                onChange={(e) => setCasino(e.target.value)}
+                placeholder="Enter casino name..."
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
           </div>
 
           <div>
@@ -86,29 +102,31 @@ export function AddBugModal({ isOpen, onClose, onSubmit, games }: AddBugModalPro
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Screenshot/Video URL</label>
-            <input
-              type="url"
-              value={screenshotUrl}
-              onChange={(e) => setScreenshotUrl(e.target.value)}
-              placeholder="https://..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Screenshot/Video URL</label>
+              <input
+                type="url"
+                value={screenshotUrl}
+                onChange={(e) => setScreenshotUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="open">Open</option>
-              <option value="in-progress">In Progress</option>
-              <option value="done">Done</option>
-              <option value="wont-fix">Won't Fix</option>
-            </select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="open">Open</option>
+                <option value="in-progress">In Progress</option>
+                <option value="done">Done</option>
+                <option value="wont-fix">Won't Fix</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

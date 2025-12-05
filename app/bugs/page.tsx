@@ -49,12 +49,14 @@ export default function BugsPage() {
 
   const handleAddBug = async (bugData: {
     gameId: string
+    casino: string | null
     description: string
     screenshotUrl: string | null
     status: string
   }) => {
     await addBug({
       gameId: bugData.gameId,
+      casino: bugData.casino,
       description: bugData.description,
       screenshotUrl: bugData.screenshotUrl,
       status: bugData.status as any,
@@ -71,9 +73,10 @@ export default function BugsPage() {
     setEditModal({ isOpen: true, bug })
   }
 
-  const handleUpdateBug = async (bugId: string, updates: { gameId: string; description: string; screenshotUrl: string | null; status: BugStatus }) => {
+  const handleUpdateBug = async (bugId: string, updates: { gameId: string; casino: string | null; description: string; screenshotUrl: string | null; status: BugStatus }) => {
     await updateBug(bugId, {
       gameId: updates.gameId,
+      casino: updates.casino,
       description: updates.description,
       screenshotUrl: updates.screenshotUrl,
       status: updates.status,

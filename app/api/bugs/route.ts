@@ -23,6 +23,7 @@ export async function GET() {
       id: bug.id,
       gameId: bug.game_id,
       gameName: bug.games?.name || "Unknown Game",
+      casino: bug.casino || null,
       description: bug.description,
       screenshotUrl: bug.screenshot_url,
       status: bug.status,
@@ -45,11 +46,12 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const body = await request.json()
 
-    const { id, gameId, description, screenshotUrl, status, createdAt } = body
+    const { id, gameId, casino, description, screenshotUrl, status, createdAt } = body
 
     const { error } = await supabase.from("bugs").insert({
       id,
       game_id: gameId,
+      casino: casino || null,
       description,
       screenshot_url: screenshotUrl || null,
       status: status || "open",
