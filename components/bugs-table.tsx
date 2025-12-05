@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { Trash2, Search, Pencil, ChevronDown, Filter, AlertCircle, ExternalLink } from "lucide-react"
 import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
 
@@ -128,6 +128,15 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<BugStatus | "all">("all")
   const [gameFilter, setGameFilter] = useState<string>("all")
+  const [casinoFilter, setCasinoFilter] = useState<string>("all")
+
+  // Get unique casinos from bugs for filter dropdown
+  const uniqueCasinos = useMemo(() => {
+    const casinos = bugs
+      .map((bug) => bug.casino)
+      .filter((casino): casino is string => casino !== null && casino !== undefined && casino.trim() !== "")
+    return [...new Set(casinos)].sort()
+  }, [bugs])
 
   // Notify parent of filter changes
   useEffect(() => {
@@ -144,7 +153,8 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
       bug.gameName?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || bug.status === statusFilter
     const matchesGame = gameFilter === "all" || bug.gameId === gameFilter
-    return matchesSearch && matchesStatus && matchesGame
+    const matchesCasino = casinoFilter === "all" || bug.casino === casinoFilter
+    return matchesSearch && matchesStatus && matchesGame && matchesCasino
   })
 
   const formatDate = (timestamp: number) => {
@@ -233,6 +243,20 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               <option value="in-progress">In Progress</option>
               <option value="done">Done</option>
               <option value="wont-fix">Won't Fix</option>
+            </select>
+
+            {/* Casino Filter */}
+            <select
+              value={casinoFilter}
+              onChange={(e) => setCasinoFilter(e.target.value)}
+              className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              title="Filter by casino"
+              aria-label="Filter by casino"
+            >
+              <option value="all">All Casinos</option>
+              {uniqueCasinos.map((casino) => (
+                <option key={casino} value={casino}>{casino}</option>
+              ))}
             </select>
           </div>
 
