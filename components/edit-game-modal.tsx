@@ -36,7 +36,7 @@ export function EditGameModal({ isOpen, onClose, onSubmit, gameId, currentName }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg w-full max-w-md">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg w-full max-w-3xl">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
           <h2 className="font-semibold text-gray-900 dark:text-white">Edit Game</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded" aria-label="Close">

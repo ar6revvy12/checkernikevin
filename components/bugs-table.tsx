@@ -43,7 +43,7 @@ function ExpandableDescription({ text, maxLength = 100 }: { text: string; maxLen
   }, [text, isExpanded])
 
   if (!needsTruncation) {
-    return <p className="text-sm text-gray-600 dark:text-gray-300">{text}</p>
+    return <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{text}</p>
   }
 
   return (
@@ -53,7 +53,7 @@ function ExpandableDescription({ text, maxLength = 100 }: { text: string; maxLen
         style={{ maxHeight: isExpanded ? `${contentHeight}px` : "2.5rem" }}
       >
         <div ref={contentRef}>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{text}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{text}</p>
         </div>
       </div>
       <button
@@ -352,7 +352,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                   onChange={(status) => onUpdateStatus(bug.id, status)}
                 />
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{bug.description}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 whitespace-pre-wrap">{bug.description}</p>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Dev Status:</span>
                 <DevStatusBadge status={bug.devStatus} />

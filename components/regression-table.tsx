@@ -41,7 +41,7 @@ function ExpandableText({ text, maxLength = 100 }: { text: string; maxLength?: n
   }, [text, isExpanded])
 
   if (!needsTruncation) {
-    return <p className="text-sm text-gray-600 dark:text-gray-300">{text}</p>
+    return <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{text}</p>
   }
 
   return (
@@ -51,7 +51,7 @@ function ExpandableText({ text, maxLength = 100 }: { text: string; maxLength?: n
         style={{ maxHeight: isExpanded ? `${contentHeight}px` : "2.5rem" }}
       >
         <div ref={contentRef}>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{text}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{text}</p>
         </div>
       </div>
       <button

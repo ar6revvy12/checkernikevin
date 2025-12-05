@@ -52,7 +52,7 @@ export function ShareModal({ isOpen, onClose, shareUrl, filters }: ShareModalPro
       onClick={handleClose}
     >
       <div
-        className={`bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md transform transition-all duration-300 ease-out ${
+        className={`bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-3xl transform transition-all duration-300 ease-out ${
           isAnimating 
             ? "scale-100 opacity-100 translate-y-0" 
             : "scale-95 opacity-0 translate-y-4"

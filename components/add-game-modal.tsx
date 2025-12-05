@@ -33,7 +33,7 @@ export function AddGameModal({ isOpen, onClose, onAddGame }: AddGameModalProps) 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg max-w-md w-full">
+      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg max-w-3xl w-full">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Add New Game</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors">
