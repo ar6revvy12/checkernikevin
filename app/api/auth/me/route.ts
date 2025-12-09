@@ -11,7 +11,7 @@ export async function GET() {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Get session
     const { data: session, error: sessionError } = await supabase
