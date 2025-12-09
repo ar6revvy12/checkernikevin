@@ -101,7 +101,7 @@ export function ShareModal({ isOpen, onClose, shareUrl, filters }: ShareModalPro
                 )}
                 {filters.search && (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg text-xs sm:text-sm font-medium animate-fadeIn animation-delay-200">
-                    Search: "{filters.search}"
+                    Search: {`"${filters.search}"`}
                   </div>
                 )}
               </div>

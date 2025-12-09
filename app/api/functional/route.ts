@@ -1,6 +1,22 @@
 import { createClient } from "@/lib/server"
 import { NextResponse } from "next/server"
 
+type FunctionalTestRow = {
+  id: string
+  game_id: string
+  games?: { name?: string | null } | null
+  test_case_id: string
+  module: string
+  test_scenario: string
+  precondition: string
+  test_steps: string
+  expected_result: string
+  status: string
+  comments: string
+  created_at: number | string
+  updated_at?: number | string | null
+}
+
 // GET all functional tests (optionally filtered by gameId)
 export async function GET(request: Request) {
   try {
@@ -27,7 +43,7 @@ export async function GET(request: Request) {
       return NextResponse.json([])
     }
 
-    const formattedTests = tests?.map((test: any) => ({
+    const formattedTests = tests?.map((test: FunctionalTestRow) => ({
       id: test.id,
       gameId: test.game_id,
       gameName: test.games?.name || "Unknown Game",

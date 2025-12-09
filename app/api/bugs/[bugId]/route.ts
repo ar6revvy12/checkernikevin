@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/server"
 import { NextResponse } from "next/server"
 
+type BugUpdatePayload = {
+  [key: string]: string | number | null
+}
+
 // GET single bug
 export async function GET(
   request: Request,
@@ -53,7 +57,7 @@ export async function PATCH(
     const { bugId } = await params
     const body = await request.json()
 
-    const updates: any = {
+    const updates: BugUpdatePayload = {
       updated_at: Date.now(),
     }
 

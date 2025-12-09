@@ -1,15 +1,16 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Trash2, Search, Pencil, ChevronDown, Filter, AlertCircle, ExternalLink } from "lucide-react"
+import { Trash2, Search, Pencil, ChevronDown, Filter, AlertCircle, ExternalLink, MessageSquare } from "lucide-react"
 import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
 
 interface BugsTableProps {
   bugs: Bug[]
   games: { id: string; name: string }[]
-  onUpdateStatus: (bugId: string, status: BugStatus) => void
-  onDeleteBug: (bugId: string) => void
-  onEditBug: (bug: Bug) => void
+  onUpdateStatus?: (bugId: string, status: BugStatus) => void
+  onDeleteBug?: (bugId: string) => void
+  onEditBug?: (bug: Bug) => void
+  onUpdateDevStatus?: (bugId: string, devStatus: DevStatus, devComment?: string) => void
   filters?: { gameId: string; status: string; search: string }
   onFiltersChange?: (filters: { gameId: string; status: string; search: string }) => void
 }
@@ -27,6 +28,8 @@ const devStatusConfig: Record<DevStatus, { bg: string; text: string; dot: string
   completed: { bg: "bg-green-500/10", text: "text-green-500", dot: "bg-green-500", label: "Completed" },
   "needs-info": { bg: "bg-orange-500/10", text: "text-orange-500", dot: "bg-orange-500", label: "Needs Info" },
 }
+
+const devStatusOptions: DevStatus[] = ["pending", "in-progress", "completed", "needs-info"]
 
 const statusOptions: BugStatus[] = ["open", "in-progress", "done", "wont-fix"]
 
@@ -64,6 +67,133 @@ function ExpandableDescription({ text, maxLength = 100 }: { text: string; maxLen
         {isExpanded ? "Show less" : "Show more"}
       </button>
     </div>
+  )
+}
+
+function DevStatusDropdown({ value, onChange }: { value: DevStatus; onChange: (status: DevStatus) => void }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const config = devStatusConfig[value]
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-medium ${config.bg} ${config.text} transition-colors hover:opacity-80`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+        {config.label}
+        <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-[130px] bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-lg overflow-hidden">
+          {devStatusOptions.map((status) => {
+            const opt = devStatusConfig[status]
+            return (
+              <button
+                key={status}
+                onClick={() => { onChange(status); setIsOpen(false) }}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors ${
+                  value === status ? `${opt.bg} ${opt.text}` : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${opt.dot}`} />
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DevCommentInput({
+  bugId,
+  initialComment,
+  onSave,
+}: {
+  bugId: string
+  initialComment: string | null
+  onSave: (bugId: string, comment: string) => void
+}) {
+  const [comment, setComment] = useState(initialComment || "")
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [isEditing])
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    await onSave(bugId, comment)
+    setIsSaving(false)
+    setIsEditing(false)
+  }
+
+  if (!isEditing) {
+    return (
+      <button
+        onClick={() => setIsEditing(true)}
+        className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors max-w-[200px]"
+        title={comment || "Add comment"}
+      >
+        <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
+        <span className="truncate whitespace-pre-wrap line-clamp-2">
+          {comment || "Add comment..."}
+        </span>
+      </button>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5 min-w-[180px]">
+      <textarea
+        ref={inputRef}
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="Enter your comment..."
+        className="w-full px-2 py-1.5 text-xs rounded border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+        rows={2}
+      />
+      <div className="flex gap-1.5">
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 transition-colors"
+        >
+          {isSaving ? "Saving..." : "Save"}
+        </button>
+        <button
+          onClick={() => { setComment(initialComment || ""); setIsEditing(false) }}
+          className="flex-1 px-2 py-1 text-xs bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-slate-500 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function StatusBadge({ status }: { status: BugStatus }) {
+  const config = statusConfig[status]
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${config.bg} ${config.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+      {config.label}
+    </span>
   )
 }
 
@@ -125,7 +255,8 @@ function DevStatusBadge({ status }: { status: DevStatus }) {
   )
 }
 
-export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug, filters, onFiltersChange }: BugsTableProps) {
+export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug, onUpdateDevStatus, filters, onFiltersChange }: BugsTableProps) {
+  const hasActions = Boolean(onEditBug || onDeleteBug)
   const searchQuery = filters?.search ?? ""
   const statusFilter = (filters?.status as BugStatus | "all") ?? "all"
   const gameFilter = filters?.gameId ?? "all"
@@ -203,7 +334,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               <option value="open">Open</option>
               <option value="in-progress">In Progress</option>
               <option value="done">Done</option>
-              <option value="wont-fix">Won't Fix</option>
+              <option value="wont-fix">{"Won't Fix"}</option>
             </select>
           </div>
 
@@ -227,13 +358,15 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">QA Status</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dev Status</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dev Comment</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Actions</th>
+              {hasActions && (
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Actions</th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
             {filteredBugs.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-12 text-center">
+                <td colSpan={hasActions ? 9 : 8} className="px-4 py-12 text-center">
                   <AlertCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
                   <p className="text-gray-500 dark:text-gray-400">No bugs found</p>
                 </td>
@@ -270,42 +403,67 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-center">
-                      <StatusDropdown
-                        value={bug.status}
-                        onChange={(status) => onUpdateStatus(bug.id, status)}
-                      />
+                      {onUpdateStatus ? (
+                        <StatusDropdown
+                          value={bug.status}
+                          onChange={(status) => onUpdateStatus(bug.id, status)}
+                        />
+                      ) : (
+                        <StatusBadge status={bug.status} />
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-center">
-                      <DevStatusBadge status={bug.devStatus} />
+                      {onUpdateDevStatus ? (
+                        <DevStatusDropdown
+                          value={bug.devStatus || "pending"}
+                          onChange={(devStatus) => onUpdateDevStatus(bug.id, devStatus, bug.devComment || undefined)}
+                        />
+                      ) : (
+                        <DevStatusBadge status={bug.devStatus} />
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-gray-600 dark:text-gray-300 max-w-[200px] truncate whitespace-pre-wrap" title={bug.devComment || ""}>
-                      {bug.devComment || <span className="text-gray-300 dark:text-gray-600">—</span>}
-                    </p>
+                    {onUpdateDevStatus ? (
+                      <DevCommentInput
+                        bugId={bug.id}
+                        initialComment={bug.devComment}
+                        onSave={(bugId, comment) => onUpdateDevStatus(bugId, bug.devStatus || "pending", comment)}
+                      />
+                    ) : (
+                      <p className="text-sm text-gray-600 dark:text-gray-300 max-w-[200px] truncate whitespace-pre-wrap" title={bug.devComment || ""}>
+                        {bug.devComment || <span className="text-gray-300 dark:text-gray-600">—</span>}
+                      </p>
+                    )}
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-1">
-                      <button
-                        onClick={() => onEditBug(bug)}
-                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                        title="Edit bug"
-                        aria-label="Edit bug"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => onDeleteBug(bug.id)}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        title="Delete bug"
-                        aria-label="Delete bug"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+                  {hasActions && (
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-1">
+                        {onEditBug && (
+                          <button
+                            onClick={() => onEditBug(bug)}
+                            className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                            title="Edit bug"
+                            aria-label="Edit bug"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
+                        {onDeleteBug && (
+                          <button
+                            onClick={() => onDeleteBug(bug.id)}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Delete bug"
+                            aria-label="Delete bug"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
@@ -329,22 +487,39 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                   {bug.casino && <p className="text-xs text-blue-500 dark:text-blue-400">{bug.casino}</p>}
                   <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(bug.createdAt)}</p>
                 </div>
-                <StatusDropdown
-                  value={bug.status}
-                  onChange={(status) => onUpdateStatus(bug.id, status)}
-                />
+                {onUpdateStatus ? (
+                  <StatusDropdown
+                    value={bug.status}
+                    onChange={(status) => onUpdateStatus(bug.id, status)}
+                  />
+                ) : (
+                  <StatusBadge status={bug.status} />
+                )}
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 whitespace-pre-wrap">{bug.description}</p>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Dev Status:</span>
-                <DevStatusBadge status={bug.devStatus} />
+                {onUpdateDevStatus ? (
+                  <DevStatusDropdown
+                    value={bug.devStatus || "pending"}
+                    onChange={(devStatus) => onUpdateDevStatus(bug.id, devStatus, bug.devComment || undefined)}
+                  />
+                ) : (
+                  <DevStatusBadge status={bug.devStatus} />
+                )}
               </div>
-              {bug.devComment && (
-                <div className="mb-3 p-2 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Dev Comment:</span>
+              <div className="pt-3 border-t border-gray-200 dark:border-slate-700">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Dev Comment:</p>
+                {onUpdateDevStatus ? (
+                  <DevCommentInput
+                    bugId={bug.id}
+                    initialComment={bug.devComment}
+                    onSave={(bugId, comment) => onUpdateDevStatus(bugId, bug.devStatus || "pending", comment)}
+                  />
+                ) : (
                   <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{bug.devComment}</p>
-                </div>
-              )}
+                )}
+              </div>
               <div className="flex items-center justify-between">
                 {bug.screenshotUrl ? (
                   <a
@@ -360,20 +535,24 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                   <span className="text-sm text-gray-400">No media</span>
                 )}
                 <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => onEditBug(bug)}
-                    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                    title="Edit bug"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onDeleteBug(bug.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title="Delete bug"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {onEditBug && (
+                    <button
+                      onClick={() => onEditBug(bug)}
+                      className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      title="Edit bug"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  )}
+                  {onDeleteBug && (
+                    <button
+                      onClick={() => onDeleteBug(bug.id)}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="Delete bug"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

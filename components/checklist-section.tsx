@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ChevronRight, Link2, ExternalLink } from "lucide-react"
+import { ChevronRight, ExternalLink } from "lucide-react"
 import type { ChecklistItem } from "@/types/checklist"
 
 interface ChecklistSectionProps {
@@ -202,7 +202,6 @@ export function ChecklistSection({ title, items, isExpanded, onToggleExpand, onU
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-slate-700/30">
               {items.map((item) => {
-                const config = statusConfig[item.status]
                 return (
                   <tr key={item.id} className="group hover:bg-gray-50 dark:hover:bg-slate-700/20 transition-colors">
                     <td className="px-5 py-3">

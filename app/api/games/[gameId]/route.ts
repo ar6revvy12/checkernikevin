@@ -1,6 +1,16 @@
 import { createClient } from "@/lib/server"
 import { NextResponse } from "next/server"
 
+type ChecklistEntry = {
+  id: string
+  title: string
+  description: string | null
+  category: string | null
+  status: string
+  evidence: string | null
+  severity: string | null
+}
+
 // GET single game with checklist
 export async function GET(request: Request, { params }: { params: Promise<{ gameId: string }> }) {
   try {
@@ -16,8 +26,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ game
     if (itemsError) throw itemsError
 
     // Reorganize items by section
-    const checklist: Record<string, any[]> = {}
-    items?.forEach((item) => {
+    const checklist: Record<string, ChecklistEntry[]> = {}
+    items?.forEach((item: {
+      id: string
+      section_id: string
+      title: string
+      description: string | null
+      category: string | null
+      status: string
+      evidence: string | null
+      severity: string | null
+    }) => {
       if (!checklist[item.section_id]) {
         checklist[item.section_id] = []
       }

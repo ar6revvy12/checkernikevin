@@ -196,10 +196,10 @@ function DevCommentInput({
   )
 }
 
-export function BugsTableViewOnly({ bugs, games, initialGameFilter = "all", initialStatusFilter = "all", initialSearch = "", onUpdateDevStatus }: BugsTableViewOnlyProps) {
-  const [searchQuery, setSearchQuery] = useState(initialSearch)
-  const [statusFilter, setStatusFilter] = useState<BugStatus | "all">(initialStatusFilter as BugStatus | "all")
-  const [gameFilter, setGameFilter] = useState<string>(initialGameFilter)
+export function BugsTableViewOnly({ bugs, initialGameFilter = "all", initialStatusFilter = "all", initialSearch = "", onUpdateDevStatus }: BugsTableViewOnlyProps) {
+  const [searchQuery] = useState(initialSearch)
+  const [statusFilter] = useState<BugStatus | "all">(initialStatusFilter as BugStatus | "all")
+  const [gameFilter] = useState<string>(initialGameFilter)
 
   const filteredBugs = bugs.filter((bug) => {
     const matchesSearch =

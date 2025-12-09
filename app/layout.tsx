@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Sidebar } from "@/components/sidebar"
 import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from "@/contexts/auth-context"
 import { LoadingScreen } from "@/components/loading-screen"
 import "./globals.css"
 
@@ -40,15 +41,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased bg-gray-50 dark:bg-slate-900`}>
+      <body className={`${_geist.className} ${_geistMono.className} font-sans antialiased bg-gray-50 dark:bg-slate-900`}>
         <ThemeProvider>
-          <LoadingScreen />
-          <Sidebar />
-          <main className="pt-14 lg:pt-0 lg:ml-64 watermark-bg min-h-screen">
-            <div className="relative z-10">
-              {children}
-            </div>
-          </main>
+          <AuthProvider>
+            <LoadingScreen />
+            <Sidebar />
+            <main className="pt-14 lg:pt-0 lg:ml-64 watermark-bg min-h-screen">
+              <div className="relative z-10">
+                {children}
+              </div>
+            </main>
+          </AuthProvider>
         </ThemeProvider>
         <Analytics />
       </body>

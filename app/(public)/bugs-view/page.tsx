@@ -1,15 +1,18 @@
 "use client"
 
 import { useState, useEffect, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Bug } from "lucide-react"
 import { BugsTableViewOnly } from "@/components/bugs-table-view-only"
 import { decodeShareFilters } from "@/lib/share-utils"
 import type { Game } from "@/types/checklist"
 import type { Bug as BugType, DevStatus } from "@/types/bugs"
+import { useAuth } from "@/contexts/auth-context"
 
 function BugsViewContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const { user } = useAuth()
   const [bugs, setBugs] = useState<BugType[]>([])
   const [games, setGames] = useState<Game[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -42,6 +45,12 @@ function BugsViewContent() {
   }, [])
 
   const handleUpdateDevStatus = async (bugId: string, devStatus: DevStatus, devComment?: string) => {
+    if (!user) {
+      alert("Please sign in to update developer status and comments.")
+      router.push("/signin")
+      return
+    }
+
     try {
       const updateData: { devStatus: DevStatus; devComment?: string } = { devStatus }
       if (devComment !== undefined) {

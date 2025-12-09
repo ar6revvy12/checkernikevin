@@ -1,6 +1,20 @@
 import { createClient } from "@/lib/server"
 import { NextResponse } from "next/server"
 
+type BugRow = {
+  id: string
+  game_id: string
+  games?: { name?: string | null } | null
+  casino?: string | null
+  description: string
+  screenshot_url?: string | null
+  status: string
+  dev_status?: string | null
+  dev_comment?: string | null
+  created_at: number | string
+  updated_at?: number | string | null
+}
+
 // GET all bugs (optionally filtered by gameId)
 export async function GET(request: Request) {
   try {
@@ -27,7 +41,7 @@ export async function GET(request: Request) {
       return NextResponse.json([])
     }
 
-    const formattedBugs = bugs?.map((bug: any) => ({
+    const formattedBugs = bugs?.map((bug: BugRow) => ({
       id: bug.id,
       gameId: bug.game_id,
       gameName: bug.games?.name || "Unknown Game",

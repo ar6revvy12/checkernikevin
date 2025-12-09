@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import type { Bug, BugStatus } from "@/types/bugs"
+import type { Bug } from "@/types/bugs"
 
 export function useBugs() {
   const [bugs, setBugs] = useState<Bug[]>([])

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Trash2, Search, Pencil, ChevronDown, Filter, CheckCircle, XCircle, CircleDashed, ExternalLink } from "lucide-react"
+import { Trash2, Search, Pencil, ChevronDown, Filter, ExternalLink } from "lucide-react"
 import type { RegressionTest, RegressionStatus, RegressionPriority } from "@/types/regression"
 
 interface RegressionTableProps {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import type { RegressionTest, RegressionStatus } from "@/types/regression"
+import type { RegressionTest } from "@/types/regression"
 
 export function useRegressionTests(gameId: string | null) {
   const [tests, setTests] = useState<RegressionTest[]>([])

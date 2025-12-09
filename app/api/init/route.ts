@@ -10,7 +10,7 @@ export async function GET() {
     const supabase = await createClient()
     
     // Test database connection
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('games')
       .select('count')
       .limit(1)

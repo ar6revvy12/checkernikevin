@@ -145,7 +145,7 @@ export function EditBugModal({ isOpen, onClose, onEdit, bug, games }: EditBugMod
               <option value="open">Open</option>
               <option value="in-progress">In Progress</option>
               <option value="done">Done</option>
-              <option value="wont-fix">Won't Fix</option>
+              <option value="wont-fix">{"Won't Fix"}</option>
             </select>
           </div>
 

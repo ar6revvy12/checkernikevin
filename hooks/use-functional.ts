@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import type { FunctionalTest, FunctionalStatus } from "@/types/functional"
+import type { FunctionalTest } from "@/types/functional"
 
 export function useFunctionalTests(gameId: string | null) {
   const [tests, setTests] = useState<FunctionalTest[]>([])

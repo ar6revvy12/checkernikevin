@@ -1,5 +1,48 @@
 import { createClient } from "@/lib/server"
 import { NextResponse } from "next/server"
+import type { ChecklistItem } from "@/types/checklist"
+
+type GameRow = {
+  id: string
+  name: string
+  package_id: string | null
+  created_at: number | string
+}
+
+type ChecklistItemRow = {
+  id: string
+  game_id: string
+  section_id: string
+  title: string
+  description: string | null
+  category: string | null
+  status: string
+  evidence: string | null
+  severity: string | null
+}
+
+type ChecklistApiItem = {
+  id: string
+  title: string
+  description: string | null
+  category: string | null
+  status: string
+  evidence: string | null
+  severity: string | null
+}
+
+type ChecklistInsertRow = {
+  id: string
+  game_id: string
+  section_id: string
+  title: string
+  description: string
+  category: string
+  status: ChecklistItem["status"]
+  evidence: string | null
+  severity: ChecklistItem["severity"] | null
+  created_at: number
+}
 
 // GET all games
 export async function GET() {
@@ -20,8 +63,10 @@ export async function GET() {
       return NextResponse.json([])
     }
 
+    const gameRows = games as GameRow[]
+
     // Fetch all checklist items for these games
-    const gameIds = games.map((g: any) => g.id)
+    const gameIds = gameRows.map((g) => g.id)
     const { data: checklistItems, error: itemsError } = await supabase
       .from("checklist_items")
       .select("*")
@@ -31,7 +76,7 @@ export async function GET() {
       console.error("Error fetching checklist items:", itemsError)
       // Return games without checklists
       return NextResponse.json(
-        games.map((game: any) => ({
+        gameRows.map((game) => ({
           id: game.id,
           name: game.name,
           packageId: game.package_id,
@@ -42,12 +87,13 @@ export async function GET() {
     }
 
     // Reconstruct the nested checklist structure
-    const gamesWithChecklists = games.map((game: any) => {
-      const checklist: Record<string, any[]> = {}
+    const checklistRows = (checklistItems ?? []) as ChecklistItemRow[]
+    const gamesWithChecklists = gameRows.map((game) => {
+      const checklist: Record<string, ChecklistApiItem[]> = {}
 
-      const gameItems = checklistItems?.filter((item: any) => item.game_id === game.id) || []
+      const gameItems = checklistRows.filter((item) => item.game_id === game.id)
 
-      gameItems.forEach((item: any) => {
+      gameItems.forEach((item: ChecklistItemRow) => {
         if (!checklist[item.section_id]) {
           checklist[item.section_id] = []
         }
@@ -97,9 +143,10 @@ export async function POST(request: Request) {
     if (gameError) throw gameError
 
     // Insert checklist items
-    const checklistItems = []
-    for (const [sectionId, items] of Object.entries(checklist)) {
-      const sectionItems = (items as any[]).map((item: any) => ({
+    const checklistItems: ChecklistInsertRow[] = []
+    const typedChecklist = checklist as Record<string, ChecklistItem[]>
+    for (const [sectionId, items] of Object.entries(typedChecklist)) {
+      const sectionItems: ChecklistInsertRow[] = items.map((item) => ({
         id: item.id,
         game_id: id,
         section_id: sectionId,
@@ -107,8 +154,8 @@ export async function POST(request: Request) {
         description: item.description,
         category: item.category,
         status: item.status,
-        evidence: item.evidence || null,
-        severity: item.severity || null,
+        evidence: item.evidence ?? null,
+        severity: item.severity ?? null,
         created_at: Date.now(),
       }))
       checklistItems.push(...sectionItems)

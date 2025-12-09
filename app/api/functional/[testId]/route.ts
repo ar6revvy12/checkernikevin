@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/server"
 import { NextResponse } from "next/server"
 
+type FunctionalTestUpdatePayload = {
+  [key: string]: string | number | null
+}
+
 // GET single functional test
 export async function GET(request: Request, { params }: { params: Promise<{ testId: string }> }) {
   try {
@@ -48,7 +52,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
     const { testId } = await params
     const body = await request.json()
 
-    const updateData: any = {
+    const updateData: FunctionalTestUpdatePayload = {
       updated_at: Date.now(),
     }
 

@@ -71,8 +71,9 @@ export function CSVPreviewModal({
 
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement("a")
+    const safeTimestamp = timestamp.replace(/[^0-9a-zA-Z]+/g, "-")
     link.setAttribute("href", encodedUri)
-    link.setAttribute("download", `qa-checklist-${gameName}-${Date.now()}.csv`)
+    link.setAttribute("download", `qa-checklist-${gameName}-${safeTimestamp}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
