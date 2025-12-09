@@ -9,6 +9,8 @@ interface RegressionTableProps {
   onUpdateStatus: (testId: string, status: RegressionStatus) => void
   onDeleteTest: (testId: string) => void
   onEditTest: (test: RegressionTest) => void
+  filters?: { status: string; priority: string; search: string }
+  onFiltersChange?: (filters: { status: string; priority: string; search: string }) => void
 }
 
 const statusConfig: Record<RegressionStatus, { bg: string; text: string; dot: string; label: string }> = {
@@ -151,10 +153,18 @@ function PriorityBadge({ priority }: { priority: RegressionPriority }) {
   )
 }
 
-export function RegressionTable({ tests, onUpdateStatus, onDeleteTest, onEditTest }: RegressionTableProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<RegressionStatus | "all">("all")
-  const [priorityFilter, setPriorityFilter] = useState<RegressionPriority | "all">("all")
+export function RegressionTable({ tests, onUpdateStatus, onDeleteTest, onEditTest, filters, onFiltersChange }: RegressionTableProps) {
+  const searchQuery = filters?.search ?? ""
+  const statusFilter = (filters?.status as RegressionStatus | "all") ?? "all"
+  const priorityFilter = (filters?.priority as RegressionPriority | "all") ?? "all"
+
+  const handleFilterChange = (newFilters: Partial<{ status: string; priority: string; search: string }>) => {
+    onFiltersChange?.({
+      status: newFilters.status ?? statusFilter,
+      priority: newFilters.priority ?? priorityFilter,
+      search: newFilters.search ?? searchQuery,
+    })
+  }
 
   const filteredTests = tests.filter((test) => {
     const matchesSearch =
@@ -186,7 +196,7 @@ export function RegressionTable({ tests, onUpdateStatus, onDeleteTest, onEditTes
             type="text"
             placeholder="Search tests..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleFilterChange({ search: e.target.value })}
             className="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
           />
         </div>
@@ -196,7 +206,7 @@ export function RegressionTable({ tests, onUpdateStatus, onDeleteTest, onEditTes
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <select
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value as RegressionPriority | "all")}
+            onChange={(e) => handleFilterChange({ priority: e.target.value })}
             className="pl-9 pr-8 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none cursor-pointer"
           >
             <option value="all">All Priorities</option>
@@ -213,7 +223,7 @@ export function RegressionTable({ tests, onUpdateStatus, onDeleteTest, onEditTes
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as RegressionStatus | "all")}
+            onChange={(e) => handleFilterChange({ status: e.target.value })}
             className="pl-9 pr-8 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none cursor-pointer"
           >
             <option value="all">All Status</option>

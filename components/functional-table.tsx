@@ -9,6 +9,8 @@ interface FunctionalTableProps {
   onUpdateStatus: (testId: string, status: FunctionalStatus) => void
   onDeleteTest: (testId: string) => void
   onEditTest: (test: FunctionalTest) => void
+  filters?: { status: string; module: string; search: string }
+  onFiltersChange?: (filters: { status: string; module: string; search: string }) => void
 }
 
 const statusConfig: Record<FunctionalStatus, { bg: string; text: string; dot: string; label: string; icon: typeof Play }> = {
@@ -134,10 +136,18 @@ function StatusDropdown({ value, onChange }: { value: FunctionalStatus; onChange
   )
 }
 
-export function FunctionalTable({ tests, onUpdateStatus, onDeleteTest, onEditTest }: FunctionalTableProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<FunctionalStatus | "all">("all")
-  const [moduleFilter, setModuleFilter] = useState<string>("all")
+export function FunctionalTable({ tests, onUpdateStatus, onDeleteTest, onEditTest, filters, onFiltersChange }: FunctionalTableProps) {
+  const searchQuery = filters?.search ?? ""
+  const statusFilter = (filters?.status as FunctionalStatus | "all") ?? "all"
+  const moduleFilter = filters?.module ?? "all"
+
+  const handleFilterChange = (newFilters: Partial<{ status: string; module: string; search: string }>) => {
+    onFiltersChange?.({
+      status: newFilters.status ?? statusFilter,
+      module: newFilters.module ?? moduleFilter,
+      search: newFilters.search ?? searchQuery,
+    })
+  }
 
   // Get unique modules for filtering
   const uniqueModules = Array.from(new Set(tests.map(t => t.module))).sort()
@@ -172,7 +182,7 @@ export function FunctionalTable({ tests, onUpdateStatus, onDeleteTest, onEditTes
             type="text"
             placeholder="Search tests..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleFilterChange({ search: e.target.value })}
             className="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400"
           />
         </div>
@@ -182,7 +192,7 @@ export function FunctionalTable({ tests, onUpdateStatus, onDeleteTest, onEditTes
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <select
             value={moduleFilter}
-            onChange={(e) => setModuleFilter(e.target.value)}
+            onChange={(e) => handleFilterChange({ module: e.target.value })}
             className="pl-9 pr-8 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none cursor-pointer"
           >
             <option value="all">All Modules</option>
@@ -198,7 +208,7 @@ export function FunctionalTable({ tests, onUpdateStatus, onDeleteTest, onEditTes
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as FunctionalStatus | "all")}
+            onChange={(e) => handleFilterChange({ status: e.target.value })}
             className="pl-9 pr-8 py-2 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none cursor-pointer"
           >
             <option value="all">All Status</option>

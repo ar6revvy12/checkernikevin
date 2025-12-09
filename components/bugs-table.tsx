@@ -10,6 +10,7 @@ interface BugsTableProps {
   onUpdateStatus: (bugId: string, status: BugStatus) => void
   onDeleteBug: (bugId: string) => void
   onEditBug: (bug: Bug) => void
+  filters?: { gameId: string; status: string; search: string }
   onFiltersChange?: (filters: { gameId: string; status: string; search: string }) => void
 }
 
@@ -124,19 +125,18 @@ function DevStatusBadge({ status }: { status: DevStatus }) {
   )
 }
 
-export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug, onFiltersChange }: BugsTableProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<BugStatus | "all">("all")
-  const [gameFilter, setGameFilter] = useState<string>("all")
+export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug, filters, onFiltersChange }: BugsTableProps) {
+  const searchQuery = filters?.search ?? ""
+  const statusFilter = (filters?.status as BugStatus | "all") ?? "all"
+  const gameFilter = filters?.gameId ?? "all"
 
-  // Notify parent of filter changes
-  useEffect(() => {
+  const handleFilterChange = (newFilters: Partial<{ gameId: string; status: string; search: string }>) => {
     onFiltersChange?.({
-      gameId: gameFilter,
-      status: statusFilter,
-      search: searchQuery,
+      gameId: newFilters.gameId ?? gameFilter,
+      status: newFilters.status ?? statusFilter,
+      search: newFilters.search ?? searchQuery,
     })
-  }, [gameFilter, statusFilter, searchQuery, onFiltersChange])
+  }
 
   const filteredBugs = bugs.filter((bug) => {
     const matchesSearch =
@@ -167,7 +167,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               type="text"
               placeholder="Search bugs..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleFilterChange({ search: e.target.value })}
               className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -179,7 +179,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               <Filter className="w-4 h-4 text-gray-400 hidden sm:block" />
               <select
                 value={gameFilter}
-                onChange={(e) => setGameFilter(e.target.value)}
+                onChange={(e) => handleFilterChange({ gameId: e.target.value })}
                 className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 title="Filter by game"
                 aria-label="Filter by game"
@@ -194,7 +194,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
             {/* Status Filter */}
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as BugStatus | "all")}
+              onChange={(e) => handleFilterChange({ status: e.target.value })}
               className="flex-1 sm:flex-initial px-2 sm:px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               title="Filter by status"
               aria-label="Filter by status"

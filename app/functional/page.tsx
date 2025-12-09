@@ -20,6 +20,7 @@ export default function FunctionalTestingPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedTest, setSelectedTest] = useState<FunctionalTest | null>(null)
   const [testToDelete, setTestToDelete] = useState<string | null>(null)
+  const [currentFilters, setCurrentFilters] = useState({ status: "all", module: "all", search: "" })
 
   // Set the first game as selected when games load
   useEffect(() => {
@@ -201,6 +202,8 @@ export default function FunctionalTestingPage() {
           onUpdateStatus={handleUpdateStatus}
           onDeleteTest={handleDeleteClick}
           onEditTest={handleEditClick}
+          filters={currentFilters}
+          onFiltersChange={setCurrentFilters}
         />
       )}
 

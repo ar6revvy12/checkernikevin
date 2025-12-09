@@ -208,6 +208,7 @@ export default function BugsPage() {
           onUpdateStatus={handleUpdateStatus}
           onDeleteBug={handleDeleteClick}
           onEditBug={handleEditClick}
+          filters={currentFilters}
           onFiltersChange={setCurrentFilters}
         />
       )}
