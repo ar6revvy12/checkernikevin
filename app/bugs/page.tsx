@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Bug, AlertCircle, Clock, CheckCircle, RefreshCw, Share2, LayoutGrid, List } from "lucide-react"
 import { useGames } from "@/hooks/use-games"
 import { useBugs } from "@/hooks/use-bugs"
@@ -11,21 +11,29 @@ import { AddBugModal } from "@/components/add-bug-modal"
 import { EditBugModal } from "@/components/edit-bug-modal"
 import { ConfirmModal } from "@/components/confirm-modal"
 import { ShareModal } from "@/components/share-modal"
+import { BugDetailModal } from "@/components/bug-detail-modal"
 import { encodeShareFilters } from "@/lib/share-utils"
-import type { Bug as BugType, BugStatus } from "@/types/bugs"
+import { useAuth } from "@/contexts/auth-context"
+import type { Bug as BugType, BugStatus, DevStatus } from "@/types/bugs"
 
 type ViewMode = "table" | "board"
 
 export default function BugsPage() {
   const { games, isLoading: gamesLoading } = useGames()
   const { bugs, isLoading: bugsLoading, addBug, updateBug, deleteBug, refreshBugs } = useBugs()
+  const { user } = useAuth()
+  const isDevUser = user?.userType === "backend" || user?.userType === "game-developer"
+  const canManageBugs = !isDevUser
+  const canEditDevInfo = isDevUser
   
   const [viewMode, setViewMode] = useState<ViewMode>("table")
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedBug, setSelectedBug] = useState<BugType | null>(null)
+  const [detailBug, setDetailBug] = useState<BugType | null>(null)
   const [bugToDelete, setBugToDelete] = useState<string | null>(null)
   const [currentFilters, setCurrentFilters] = useState({ gameId: "all", status: "all", search: "" })
 
@@ -67,9 +75,21 @@ export default function BugsPage() {
     await updateBug(bugId, { status })
   }
 
+  const handleUpdateDevInfo = async (bugId: string, devStatus: DevStatus, devComment?: string) => {
+    await updateBug(bugId, {
+      devStatus,
+      devComment: devComment ?? null,
+    })
+  }
+
   const handleDeleteClick = (bugId: string) => {
     setBugToDelete(bugId)
     setIsDeleteModalOpen(true)
+  }
+
+  const handleDeleteFromDetail = (bugId: string) => {
+    handleDeleteClick(bugId)
+    setIsDetailModalOpen(false)
   }
 
   const handleConfirmDelete = async () => {
@@ -83,6 +103,21 @@ export default function BugsPage() {
   const handleEditClick = (bug: BugType) => {
     setSelectedBug(bug)
     setIsEditModalOpen(true)
+  }
+
+  const handleEditFromDetail = (bug: BugType) => {
+    handleEditClick(bug)
+    setIsDetailModalOpen(false)
+  }
+
+  const handleOpenDetail = (bug: BugType) => {
+    setDetailBug(bug)
+    setIsDetailModalOpen(true)
+  }
+
+  const handleCloseDetail = () => {
+    setIsDetailModalOpen(false)
+    setDetailBug(null)
   }
 
   // Filter bugs based on current filters for stats
@@ -113,6 +148,14 @@ export default function BugsPage() {
     : ""
 
   const isLoading = gamesLoading || bugsLoading
+
+  useEffect(() => {
+    if (!detailBug) return
+    const latest = bugs.find((b) => b.id === detailBug.id)
+    if (latest && latest !== detailBug) {
+      setDetailBug(latest)
+    }
+  }, [bugs, detailBug])
 
   return (
     <AuthGuard>
@@ -163,20 +206,24 @@ export default function BugsPage() {
           >
             <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
-          <button
-            onClick={() => setIsShareModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
-          >
-            <Share2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Share</span>
-          </button>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Bug</span>
-          </button>
+          {canManageBugs && (
+            <>
+              <button
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Add Bug</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -237,57 +284,77 @@ export default function BugsPage() {
         <BugsTable
           bugs={bugs}
           games={games.map(g => ({ id: g.id, name: g.name }))}
-          onUpdateStatus={handleUpdateStatus}
-          onDeleteBug={handleDeleteClick}
-          onEditBug={handleEditClick}
+          onUpdateStatus={canManageBugs ? handleUpdateStatus : undefined}
+          onDeleteBug={canManageBugs ? handleDeleteClick : undefined}
+          onEditBug={canManageBugs ? handleEditClick : undefined}
+          onUpdateDevStatus={handleUpdateDevInfo}
+          onSelectBug={handleOpenDetail}
+          canEditDevInfo={canEditDevInfo}
           filters={currentFilters}
           onFiltersChange={setCurrentFilters}
         />
       ) : (
         <BugsBoard
           bugs={bugs}
-          games={games.map(g => ({ id: g.id, name: g.name }))}
-          onUpdateStatus={handleUpdateStatus}
-          onDeleteBug={handleDeleteClick}
-          onEditBug={handleEditClick}
+          onUpdateStatus={canManageBugs ? handleUpdateStatus : undefined}
+          onUpdateDevStatus={handleUpdateDevInfo}
+          onDeleteBug={canManageBugs ? handleDeleteClick : undefined}
+          onEditBug={canManageBugs ? handleEditClick : undefined}
+          onSelectBug={handleOpenDetail}
+          isReadOnly={isDevUser}
+          canEditDevInfo={canEditDevInfo}
         />
       )}
 
-      {/* Modals */}
-      <AddBugModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAdd={handleAddBug}
-        games={games.map(g => ({ id: g.id, name: g.name }))}
-      />
+      {canManageBugs && (
+        <>
+          <AddBugModal
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            onAdd={handleAddBug}
+            games={games.map(g => ({ id: g.id, name: g.name }))}
+          />
 
-      <EditBugModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onEdit={handleEditBug}
-        bug={selectedBug}
-        games={games.map(g => ({ id: g.id, name: g.name }))}
-      />
+          <EditBugModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onEdit={handleEditBug}
+            bug={selectedBug}
+            games={games.map(g => ({ id: g.id, name: g.name }))}
+          />
 
-      <ConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Bug"
-        message="Are you sure you want to delete this bug? This action cannot be undone."
-        confirmText="Delete"
-        confirmColor="red"
-      />
+          <ConfirmModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={handleConfirmDelete}
+            title="Delete Bug"
+            message="Are you sure you want to delete this bug? This action cannot be undone."
+            confirmText="Delete"
+            confirmColor="red"
+          />
 
-      <ShareModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        shareUrl={shareUrl}
-        filters={{
-          gameName: selectedGame?.name || (currentFilters.gameId === "all" ? "All Games" : ""),
-          status: currentFilters.status === "all" ? "All Status" : currentFilters.status,
-          search: currentFilters.search,
-        }}
+          <ShareModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            shareUrl={shareUrl}
+            filters={{
+              gameName: selectedGame?.name || (currentFilters.gameId === "all" ? "All Games" : ""),
+              status: currentFilters.status === "all" ? "All Status" : currentFilters.status,
+              search: currentFilters.search,
+            }}
+          />
+        </>
+      )}
+
+      <BugDetailModal
+        bug={detailBug}
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseDetail}
+        canManage={canManageBugs}
+        canEditDevInfo={canEditDevInfo}
+        onEditBug={canManageBugs ? handleEditFromDetail : undefined}
+        onDeleteBug={canManageBugs ? handleDeleteFromDetail : undefined}
+        onUpdateDevInfo={handleUpdateDevInfo}
       />
     </div>
     </AuthGuard>

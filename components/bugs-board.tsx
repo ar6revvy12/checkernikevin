@@ -1,15 +1,19 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, type MouseEvent } from "react"
 import { Trash2, Pencil, ExternalLink, GripVertical } from "lucide-react"
-import type { Bug, BugStatus } from "@/types/bugs"
+import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
+import { DevStatusDropdown, DevCommentInput } from "./bugs-table"
 
 interface BugsBoardProps {
   bugs: Bug[]
-  games: { id: string; name: string }[]
-  onUpdateStatus: (bugId: string, status: BugStatus) => void
-  onDeleteBug: (bugId: string) => void
-  onEditBug: (bug: Bug) => void
+  onUpdateStatus?: (bugId: string, status: BugStatus) => void
+  onUpdateDevStatus?: (bugId: string, status: DevStatus, devComment?: string) => void
+  onDeleteBug?: (bugId: string) => void
+  onEditBug?: (bug: Bug) => void
+  onSelectBug?: (bug: Bug) => void
+  isReadOnly?: boolean
+  canEditDevInfo?: boolean
 }
 
 const columns: { status: BugStatus; label: string; color: string }[] = [
@@ -19,11 +23,22 @@ const columns: { status: BugStatus; label: string; color: string }[] = [
   { status: "wont-fix", label: "Won't Fix", color: "bg-gray-500" },
 ]
 
-export function BugsBoard({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug }: BugsBoardProps) {
+export function BugsBoard({ bugs, onUpdateStatus, onUpdateDevStatus, onDeleteBug, onEditBug, onSelectBug, isReadOnly = false, canEditDevInfo = false }: BugsBoardProps) {
   const [draggedBug, setDraggedBug] = useState<Bug | null>(null)
   const [dragOverColumn, setDragOverColumn] = useState<BugStatus | null>(null)
+  const canDrag = !isReadOnly && Boolean(onUpdateStatus)
+  const hasActions = Boolean(onEditBug || onDeleteBug)
+  const canEditDevFields = canEditDevInfo && Boolean(onUpdateDevStatus)
+
+  const handleCardClick = (event: MouseEvent<HTMLDivElement>, bug: Bug) => {
+    if (!onSelectBug) return
+    const target = event.target as HTMLElement
+    if (target.closest("button, a, textarea, input, select")) return
+    onSelectBug(bug)
+  }
 
   const handleDragStart = (bug: Bug) => {
+    if (!canDrag) return
     setDraggedBug(bug)
   }
 
@@ -33,6 +48,7 @@ export function BugsBoard({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug 
   }
 
   const handleDragOver = (e: React.DragEvent, status: BugStatus) => {
+    if (!canDrag) return
     e.preventDefault()
     setDragOverColumn(status)
   }
@@ -42,6 +58,7 @@ export function BugsBoard({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug 
   }
 
   const handleDrop = (e: React.DragEvent, status: BugStatus) => {
+    if (!canDrag || !onUpdateStatus) return
     e.preventDefault()
     if (draggedBug && draggedBug.status !== status) {
       onUpdateStatus(draggedBug.id, status)
@@ -66,15 +83,15 @@ export function BugsBoard({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug 
       <div className="flex gap-4 h-full min-w-max pb-4">
         {columns.map((column) => {
           const columnBugs = getBugsByStatus(column.status)
-          const isOver = dragOverColumn === column.status
+          const isOver = canDrag && dragOverColumn === column.status
 
           return (
             <div
               key={column.status}
               className="flex-1 min-w-[320px] max-w-[400px] flex flex-col"
-              onDragOver={(e) => handleDragOver(e, column.status)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, column.status)}
+              onDragOver={canDrag ? (e) => handleDragOver(e, column.status) : undefined}
+              onDragLeave={canDrag ? handleDragLeave : undefined}
+              onDrop={canDrag ? (e) => handleDrop(e, column.status) : undefined}
             >
               {/* Column Header */}
               <div className="flex items-center gap-2 mb-3">
@@ -101,10 +118,13 @@ export function BugsBoard({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug 
                   columnBugs.map((bug) => (
                     <div
                       key={bug.id}
-                      draggable
+                      draggable={canDrag}
                       onDragStart={() => handleDragStart(bug)}
                       onDragEnd={handleDragEnd}
-                      className={`bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-3 cursor-move hover:shadow-md transition-shadow ${
+                      onClick={(event) => handleCardClick(event, bug)}
+                      className={`bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-3 ${
+                        canDrag ? "cursor-move" : "cursor-default"
+                      } hover:shadow-md transition-shadow ${
                         draggedBug?.id === bug.id ? "opacity-50" : ""
                       }`}
                     >
@@ -133,30 +153,45 @@ export function BugsBoard({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug 
                         {bug.description}
                       </p>
 
-                      {/* Dev Status Badge */}
-                      {bug.devStatus && (
-                        <div className="mb-3">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${
-                              bug.devStatus === "pending"
-                                ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                                : bug.devStatus === "in-progress"
-                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                                : bug.devStatus === "completed"
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                                : "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
-                            }`}
-                          >
-                            Dev: {bug.devStatus}
-                          </span>
+                      {/* Dev Controls or read-only info */}
+                      {canEditDevFields ? (
+                        <div className="mb-3 space-y-2">
+                          <DevStatusDropdown
+                            value={bug.devStatus || "pending"}
+                            onChange={(devStatus) => onUpdateDevStatus!(bug.id, devStatus, bug.devComment || undefined)}
+                          />
+                          <DevCommentInput
+                            bugId={bug.id}
+                            initialComment={bug.devComment}
+                            onSave={(bugId, comment) => onUpdateDevStatus!(bugId, bug.devStatus || "pending", comment)}
+                          />
                         </div>
-                      )}
+                      ) : (
+                        <>
+                          {bug.devStatus && (
+                            <div className="mb-3">
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${
+                                  bug.devStatus === "pending"
+                                    ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                                    : bug.devStatus === "in-progress"
+                                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                                    : bug.devStatus === "completed"
+                                    ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                                    : "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                                }`}
+                              >
+                                Dev: {bug.devStatus}
+                              </span>
+                            </div>
+                          )}
 
-                      {/* Dev Comment */}
-                      {bug.devComment && (
-                        <div className="mb-3 p-2 bg-gray-50 dark:bg-slate-700/50 rounded text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
-                          {bug.devComment}
-                        </div>
+                          {bug.devComment && (
+                            <div className="mb-3 p-2 bg-gray-50 dark:bg-slate-700/50 rounded text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
+                              {bug.devComment}
+                            </div>
+                          )}
+                        </>
                       )}
 
                       {/* Card Footer */}
@@ -175,28 +210,36 @@ export function BugsBoard({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug 
                         ) : (
                           <span className="text-xs text-gray-400">No media</span>
                         )}
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onEditBug(bug)
-                            }}
-                            className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                            title="Edit bug"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onDeleteBug(bug.id)
-                            }}
-                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                            title="Delete bug"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {hasActions ? (
+                          <div className="flex items-center gap-1">
+                            {onEditBug && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onEditBug(bug)
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                                title="Edit bug"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            {onDeleteBug && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onDeleteBug(bug.id)
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                title="Delete bug"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">&nbsp;</span>
+                        )}
                       </div>
                     </div>
                   ))

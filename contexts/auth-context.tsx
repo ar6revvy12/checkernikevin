@@ -1,12 +1,13 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import type { User } from "@/types/auth"
+import type { User, UserType } from "@/types/auth"
 
 interface AuthContextType {
   user: User | null
   isLoading: boolean
   signIn: (email: string, password: string) => Promise<boolean>
+  signUp: (email: string, password: string, name: string, userType: UserType) => Promise<boolean>
   signOut: () => Promise<void>
   checkAuth: () => Promise<void>
 }
@@ -58,6 +59,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const signUp = async (
+    email: string,
+    password: string,
+    name: string,
+    userType: UserType
+  ): Promise<boolean> => {
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name, userType }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+        return true
+      }
+
+      return false
+    } catch (error) {
+      console.error("Sign up failed:", error)
+      return false
+    }
+  }
+
   const signOut = async () => {
     try {
       await fetch("/api/auth/signout", { method: "POST" })
@@ -68,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, checkAuth }}>
+    <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut, checkAuth }}>
       {children}
     </AuthContext.Provider>
   )

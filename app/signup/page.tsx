@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { UserPlus, Loader2 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
+import type { UserType } from "@/types/auth"
 
 const userTypes = [
   { value: "admin", label: "Admin" },
@@ -20,7 +21,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [userType, setUserType] = useState("")
+  const [userType, setUserType] = useState<UserType | "">("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -47,7 +48,7 @@ export default function SignUpPage() {
     setIsLoading(true)
 
     try {
-      const success = await signUp(email, password, name, userType)
+      const success = await signUp(email, password, name, userType as UserType)
       if (success) {
         router.push("/")
       } else {
@@ -115,7 +116,7 @@ export default function SignUpPage() {
               <select
                 id="userType"
                 value={userType}
-                onChange={(e) => setUserType(e.target.value)}
+                onChange={(e) => setUserType(e.target.value as UserType)}
                 required
                 className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
               >

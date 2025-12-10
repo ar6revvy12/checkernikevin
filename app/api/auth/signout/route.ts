@@ -8,8 +8,8 @@ export async function POST() {
     const token = cookieStore.get("session_token")?.value
 
     if (token) {
-      const supabase = createClient()
-      
+      const supabase = await createClient()
+
       // Delete session from database
       await supabase.from("sessions").delete().eq("token", token)
     }

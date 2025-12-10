@@ -49,13 +49,6 @@ export function Sidebar() {
   const { user, signOut } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
 
-  // Don't show sidebar on auth pages
-  if (!user || pathname === "/signin" || pathname === "/signup") {
-    return null
-  }
-
-  const navItems = getNavItems(user.userType === "admin")
-
   // Close sidebar on route change
   useEffect(() => {
     setIsOpen(false)
@@ -72,6 +65,13 @@ export function Sidebar() {
       document.body.style.overflow = ""
     }
   }, [isOpen])
+
+  // Don't show sidebar on auth pages
+  if (!user || pathname === "/signin" || pathname === "/signup") {
+    return null
+  }
+
+  const navItems = getNavItems(user.userType === "admin")
 
   return (
     <>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, type MouseEvent } from "react"
 import { Trash2, Search, Pencil, ChevronDown, Filter, AlertCircle, ExternalLink, MessageSquare } from "lucide-react"
 import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
 
@@ -11,6 +11,8 @@ interface BugsTableProps {
   onDeleteBug?: (bugId: string) => void
   onEditBug?: (bug: Bug) => void
   onUpdateDevStatus?: (bugId: string, devStatus: DevStatus, devComment?: string) => void
+  onSelectBug?: (bug: Bug) => void
+  canEditDevInfo?: boolean
   filters?: { gameId: string; status: string; search: string }
   onFiltersChange?: (filters: { gameId: string; status: string; search: string }) => void
 }
@@ -70,7 +72,7 @@ function ExpandableDescription({ text, maxLength = 100 }: { text: string; maxLen
   )
 }
 
-function DevStatusDropdown({ value, onChange }: { value: DevStatus; onChange: (status: DevStatus) => void }) {
+export function DevStatusDropdown({ value, onChange }: { value: DevStatus; onChange: (status: DevStatus) => void }) {
   const [isOpen, setIsOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const config = devStatusConfig[value]
@@ -116,7 +118,7 @@ function DevStatusDropdown({ value, onChange }: { value: DevStatus; onChange: (s
   )
 }
 
-function DevCommentInput({
+export function DevCommentInput({
   bugId,
   initialComment,
   onSave,
@@ -255,7 +257,7 @@ function DevStatusBadge({ status }: { status: DevStatus }) {
   )
 }
 
-export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug, onUpdateDevStatus, filters, onFiltersChange }: BugsTableProps) {
+export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug, onUpdateDevStatus, onSelectBug, canEditDevInfo = false, filters, onFiltersChange }: BugsTableProps) {
   const hasActions = Boolean(onEditBug || onDeleteBug)
   const searchQuery = filters?.search ?? ""
   const statusFilter = (filters?.status as BugStatus | "all") ?? "all"
@@ -284,6 +286,20 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
       day: "numeric",
       year: "numeric",
     })
+  }
+
+  const handleRowClick = (event: MouseEvent<HTMLTableRowElement>, bug: Bug) => {
+    if (!onSelectBug) return
+    const target = event.target as HTMLElement
+    if (target.closest("button, a, input, textarea, select")) return
+    onSelectBug(bug)
+  }
+
+  const handleCardClick = (event: MouseEvent<HTMLDivElement>, bug: Bug) => {
+    if (!onSelectBug) return
+    const target = event.target as HTMLElement
+    if (target.closest("button, a, input, textarea, select")) return
+    onSelectBug(bug)
   }
 
   return (
@@ -373,7 +389,13 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               </tr>
             ) : (
               filteredBugs.map((bug) => (
-                <tr key={bug.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
+                <tr
+                  key={bug.id}
+                  onClick={(event) => handleRowClick(event, bug)}
+                  className={`transition-colors ${
+                    onSelectBug ? "hover:bg-gray-50 dark:hover:bg-slate-700/30 cursor-pointer" : "hover:bg-gray-50 dark:hover:bg-slate-700/30"
+                  }`}
+                >
                   <td className="px-4 py-3">
                     <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(bug.createdAt)}</span>
                   </td>
@@ -415,7 +437,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-center">
-                      {onUpdateDevStatus ? (
+                      {canEditDevInfo && onUpdateDevStatus ? (
                         <DevStatusDropdown
                           value={bug.devStatus || "pending"}
                           onChange={(devStatus) => onUpdateDevStatus(bug.id, devStatus, bug.devComment || undefined)}
@@ -426,7 +448,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    {onUpdateDevStatus ? (
+                    {canEditDevInfo && onUpdateDevStatus ? (
                       <DevCommentInput
                         bugId={bug.id}
                         initialComment={bug.devComment}
@@ -480,7 +502,13 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
           </div>
         ) : (
           filteredBugs.map((bug) => (
-            <div key={bug.id} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+            <div
+              key={bug.id}
+              onClick={(event) => handleCardClick(event, bug)}
+              className={`bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4 ${
+                onSelectBug ? "cursor-pointer" : ""
+              }`}
+            >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{bug.gameName}</p>
@@ -499,7 +527,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 whitespace-pre-wrap">{bug.description}</p>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Dev Status:</span>
-                {onUpdateDevStatus ? (
+                {canEditDevInfo && onUpdateDevStatus ? (
                   <DevStatusDropdown
                     value={bug.devStatus || "pending"}
                     onChange={(devStatus) => onUpdateDevStatus(bug.id, devStatus, bug.devComment || undefined)}
@@ -510,7 +538,7 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
               </div>
               <div className="pt-3 border-t border-gray-200 dark:border-slate-700">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Dev Comment:</p>
-                {onUpdateDevStatus ? (
+                {canEditDevInfo && onUpdateDevStatus ? (
                   <DevCommentInput
                     bugId={bug.id}
                     initialComment={bug.devComment}
