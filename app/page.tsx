@@ -13,13 +13,11 @@ import { useGames } from "@/hooks/use-games"
 import type { Game, ChecklistItem } from "@/types/checklist"
 import { gamePackages } from "@/lib/game-packages"
 import { generateChecklist } from "@/lib/checklist-generator"
-import { useAuth } from "@/contexts/auth-context"
 
 // Fixed order for checklist sections
 const SECTION_ORDER = ["ui-ux", "menu-nav", "gameplay", "features", "audio", "performance"]
 
 export default function Home() {
-  const { user } = useAuth()
   const { games, isLoading, addGame, deleteGame, updateGame, updateChecklist } = useGames()
   const [activeGameId, setActiveGameId] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -43,6 +41,7 @@ export default function Home() {
   }, [games, activeGameId])
 
   const activeGame = games.find((g) => g.id === activeGameId)
+  const checklist = activeGame?.checklist || {}
 
   const filteredGames = games.filter((game) =>
     game.name.toLowerCase().includes(gameSearch.toLowerCase())
@@ -120,23 +119,6 @@ export default function Home() {
   const reworkCount = allItems.filter((item) => item.status === "need-rework").length
   const uncheckedCount = allItems.filter((item) => item.status === "unchecked").length
   const completionPercentage = totalItems > 0 ? Math.round((doneCount / totalItems) * 100) : 0
-
-  const isDev = user?.userType === "backend" || user?.userType === "game-developer"
-
-  if (isDev) {
-    return (
-      <AuthGuard>
-        <main className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
-          <div className="text-center max-w-md px-4">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Restricted</h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              Developer accounts do not have access to the QA checklist. Please use the Bugs &amp; Errors page instead.
-            </p>
-          </div>
-        </main>
-      </AuthGuard>
-    )
-  }
 
   return (
     <AuthGuard>

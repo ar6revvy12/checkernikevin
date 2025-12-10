@@ -98,8 +98,7 @@ export default function AccountsPage() {
         const data = await response.json()
         setError(data.error || "Failed to create user")
       }
-    } catch (error) {
-      console.error("Failed to create user:", error)
+    } catch (err) {
       setError("An error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -147,12 +146,6 @@ export default function AccountsPage() {
     })
   }
 
-  const totalUsers = users.length
-  const adminCount = users.filter((u) => u.userType === "admin").length
-  const qaCount = users.filter((u) => u.userType === "quality-assurance").length
-  const devCount = users.filter((u) => u.userType === "backend" || u.userType === "game-developer").length
-  const teamCount = users.filter((u) => u.userType === "team").length
-
   return (
     <AuthGuard>
       <div className="p-6 space-y-6">
@@ -174,30 +167,6 @@ export default function AccountsPage() {
             <Plus className="w-4 h-4" />
             Add User
           </button>
-        </div>
-
-        {/* User Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-gray-200 dark:border-slate-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Total Users</p>
-            <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{totalUsers}</p>
-          </div>
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-gray-200 dark:border-slate-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Admins</p>
-            <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{adminCount}</p>
-          </div>
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-gray-200 dark:border-slate-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">QA</p>
-            <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{qaCount}</p>
-          </div>
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-gray-200 dark:border-slate-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Developers</p>
-            <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{devCount}</p>
-          </div>
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-gray-200 dark:border-slate-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Team Members</p>
-            <p className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{teamCount}</p>
-          </div>
         </div>
 
         {/* Users Table */}

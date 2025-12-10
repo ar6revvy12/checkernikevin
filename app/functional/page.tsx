@@ -5,7 +5,6 @@ import { Plus, FlaskConical, Play, Square, RefreshCw } from "lucide-react"
 import { useGames } from "@/hooks/use-games"
 import { useFunctionalTests } from "@/hooks/use-functional"
 import { AuthGuard } from "@/components/auth-guard"
-import { useAuth } from "@/contexts/auth-context"
 import { FunctionalTable } from "@/components/functional-table"
 import { AddFunctionalModal } from "@/components/add-functional-modal"
 import { EditFunctionalModal } from "@/components/edit-functional-modal"
@@ -13,7 +12,6 @@ import { ConfirmModal } from "@/components/confirm-modal"
 import type { FunctionalTest, FunctionalStatus } from "@/types/functional"
 
 export default function FunctionalTestingPage() {
-  const { user } = useAuth()
   const { games, isLoading: gamesLoading } = useGames()
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
   const { tests, isLoading: testsLoading, addTest, updateTest, deleteTest, refreshTests } = useFunctionalTests(selectedGameId)
@@ -92,23 +90,6 @@ export default function FunctionalTestingPage() {
   const totalCount = tests.length
 
   const isLoading = gamesLoading || testsLoading
-
-  const isDev = user?.userType === "backend" || user?.userType === "game-developer"
-
-  if (isDev) {
-    return (
-      <AuthGuard>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center max-w-md px-4">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Restricted</h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              Developer accounts do not have access to Functional Testing. Please use the Bugs &amp; Errors page instead.
-            </p>
-          </div>
-        </div>
-      </AuthGuard>
-    )
-  }
 
   return (
     <AuthGuard>

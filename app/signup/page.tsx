@@ -53,8 +53,7 @@ export default function SignUpPage() {
       } else {
         setError("Failed to create account. Email may already be in use.")
       }
-    } catch (error) {
-      console.error("Sign-up failed:", error)
+    } catch (err) {
       setError("An error occurred. Please try again.")
     } finally {
       setIsLoading(false)

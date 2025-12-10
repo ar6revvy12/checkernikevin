@@ -15,7 +15,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
-    const supabase = await createClient()
+    const supabase = createClient()
 
     // Get current user from session
     const { data: session } = await supabase

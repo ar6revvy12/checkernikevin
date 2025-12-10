@@ -5,7 +5,6 @@ import { Plus, RotateCcw, CheckCircle, XCircle, RefreshCw } from "lucide-react"
 import { useGames } from "@/hooks/use-games"
 import { useRegressionTests } from "@/hooks/use-regression"
 import { AuthGuard } from "@/components/auth-guard"
-import { useAuth } from "@/contexts/auth-context"
 import { RegressionTable } from "@/components/regression-table"
 import { AddRegressionModal } from "@/components/add-regression-modal"
 import { EditRegressionModal } from "@/components/edit-regression-modal"
@@ -13,7 +12,6 @@ import { ConfirmModal } from "@/components/confirm-modal"
 import type { RegressionTest, RegressionStatus, RegressionPriority } from "@/types/regression"
 
 export default function RegressionTestingPage() {
-  const { user } = useAuth()
   const { games, isLoading: gamesLoading } = useGames()
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
   const { tests, isLoading: testsLoading, addTest, updateTest, deleteTest, refreshTests } = useRegressionTests(selectedGameId)
@@ -90,23 +88,6 @@ export default function RegressionTestingPage() {
   const totalCount = tests.length
 
   const isLoading = gamesLoading || testsLoading
-
-  const isDev = user?.userType === "backend" || user?.userType === "game-developer"
-
-  if (isDev) {
-    return (
-      <AuthGuard>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center max-w-md px-4">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Restricted</h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              Developer accounts do not have access to Regression Testing. Please use the Bugs &amp; Errors page instead.
-            </p>
-          </div>
-        </div>
-      </AuthGuard>
-    )
-  }
 
   return (
     <AuthGuard>

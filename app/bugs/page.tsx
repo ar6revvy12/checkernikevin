@@ -5,7 +5,6 @@ import { Plus, Bug, AlertCircle, Clock, CheckCircle, RefreshCw, Share2, LayoutGr
 import { useGames } from "@/hooks/use-games"
 import { useBugs } from "@/hooks/use-bugs"
 import { AuthGuard } from "@/components/auth-guard"
-import { useAuth } from "@/contexts/auth-context"
 import { BugsTable } from "@/components/bugs-table"
 import { BugsBoard } from "@/components/bugs-board"
 import { AddBugModal } from "@/components/add-bug-modal"
@@ -13,16 +12,11 @@ import { EditBugModal } from "@/components/edit-bug-modal"
 import { ConfirmModal } from "@/components/confirm-modal"
 import { ShareModal } from "@/components/share-modal"
 import { encodeShareFilters } from "@/lib/share-utils"
-import type { Bug as BugType, BugStatus, DevStatus } from "@/types/bugs"
+import type { Bug as BugType, BugStatus } from "@/types/bugs"
 
 type ViewMode = "table" | "board"
 
 export default function BugsPage() {
-  const { user } = useAuth()
-  const userType = user?.userType
-  const canManageBugs = userType === "admin" || userType === "quality-assurance"
-  const canEditDevFields = userType === "backend" || userType === "game-developer"
-
   const { games, isLoading: gamesLoading } = useGames()
   const { bugs, isLoading: bugsLoading, addBug, updateBug, deleteBug, refreshBugs } = useBugs()
   
@@ -73,14 +67,6 @@ export default function BugsPage() {
     await updateBug(bugId, { status })
   }
 
-  const handleUpdateDevStatus = async (bugId: string, devStatus: DevStatus, devComment?: string) => {
-    const updates: Partial<BugType> = { devStatus }
-    if (devComment !== undefined) {
-      updates.devComment = devComment
-    }
-    await updateBug(bugId, updates)
-  }
-
   const handleDeleteClick = (bugId: string) => {
     setBugToDelete(bugId)
     setIsDeleteModalOpen(true)
@@ -116,11 +102,6 @@ export default function BugsPage() {
   const doneCount = filteredBugs.filter((b) => b.status === "done").length
   const totalCount = filteredBugs.length
 
-  const devPendingCount = filteredBugs.filter((b) => b.devStatus === "pending").length
-  const devInProgressCount = filteredBugs.filter((b) => b.devStatus === "in-progress").length
-  const devCompletedCount = filteredBugs.filter((b) => b.devStatus === "completed").length
-  const devNeedsInfoCount = filteredBugs.filter((b) => b.devStatus === "needs-info").length
-
   // Generate share URL
   const selectedGame = games.find(g => g.id === currentFilters.gameId)
   const shareUrl = typeof window !== "undefined" 
@@ -145,11 +126,6 @@ export default function BugsPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Bugs & Errors</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">Track and manage bugs across all games</p>
-            {canEditDevFields && (
-              <p className="mt-1 text-xs text-blue-500 dark:text-blue-400">
-                Developer view: QA status is read-only. Use Dev Status and Dev Comment to track your work.
-              </p>
-            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -187,28 +163,24 @@ export default function BugsPage() {
           >
             <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
-          {canManageBugs && (
-            <button
-              onClick={() => setIsShareModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
-            >
-              <Share2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Share</span>
-            </button>
-          )}
-          {canManageBugs && (
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Bug</span>
-            </button>
-          )}
+          <button
+            onClick={() => setIsShareModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Share</span>
+          </button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Add Bug</span>
+          </button>
         </div>
       </div>
 
-      {/* QA Stats */}
+      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
           <div className="flex items-center gap-3">
@@ -256,55 +228,6 @@ export default function BugsPage() {
         </div>
       </div>
 
-      {canEditDevFields && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center">
-                <Bug className="w-5 h-5 text-gray-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{devPendingCount}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Dev Pending</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-blue-500">{devInProgressCount}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Dev In Progress</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-green-500">{devCompletedCount}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Dev Completed</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-orange-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-orange-500">{devNeedsInfoCount}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Needs Info</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Table or Board View */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -314,10 +237,9 @@ export default function BugsPage() {
         <BugsTable
           bugs={bugs}
           games={games.map(g => ({ id: g.id, name: g.name }))}
-          onUpdateStatus={canManageBugs ? handleUpdateStatus : undefined}
-          onDeleteBug={canManageBugs ? handleDeleteClick : undefined}
-          onEditBug={canManageBugs ? handleEditClick : undefined}
-          onUpdateDevStatus={canEditDevFields ? handleUpdateDevStatus : undefined}
+          onUpdateStatus={handleUpdateStatus}
+          onDeleteBug={handleDeleteClick}
+          onEditBug={handleEditClick}
           filters={currentFilters}
           onFiltersChange={setCurrentFilters}
         />
@@ -325,10 +247,9 @@ export default function BugsPage() {
         <BugsBoard
           bugs={bugs}
           games={games.map(g => ({ id: g.id, name: g.name }))}
-          onUpdateStatus={canManageBugs ? handleUpdateStatus : undefined}
-          onDeleteBug={canManageBugs ? handleDeleteClick : undefined}
-          onEditBug={canManageBugs ? handleEditClick : undefined}
-          onUpdateDevStatus={canEditDevFields ? handleUpdateDevStatus : undefined}
+          onUpdateStatus={handleUpdateStatus}
+          onDeleteBug={handleDeleteClick}
+          onEditBug={handleEditClick}
         />
       )}
 

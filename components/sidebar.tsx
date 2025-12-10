@@ -4,54 +4,34 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { ClipboardCheck, Bug, Moon, Sun, Menu, X, FlaskConical, RotateCcw, LogOut, User, Activity } from "lucide-react"
+import { ClipboardCheck, Bug, Moon, Sun, Menu, X, FlaskConical, RotateCcw, LogOut, User } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/contexts/auth-context"
 
-const getNavItems = (userType?: string) => {
-  const isAdmin = userType === "admin"
-  const isDev = userType === "backend" || userType === "game-developer"
-
-  const items: { href: string; label: string; icon: typeof ClipboardCheck }[] = []
-
-  if (!isDev) {
-    items.push(
-      {
-        href: "/",
-        label: "Checklist",
-        icon: ClipboardCheck,
-      },
-      {
-        href: "/bugs",
-        label: "Bugs & Errors",
-        icon: Bug,
-      },
-      {
-        href: "/functional",
-        label: "Functional Testing",
-        icon: FlaskConical,
-      },
-      {
-        href: "/regression",
-        label: "Regression Testing",
-        icon: RotateCcw,
-      },
-    )
-  } else {
-    items.push(
-      {
-        href: "/dev",
-        label: "Dev Dashboard",
-        icon: Activity,
-      },
-      {
-        href: "/bugs",
-        label: "Bugs & Errors",
-        icon: Bug,
-      },
-    )
-  }
-
+const getNavItems = (isAdmin: boolean) => {
+  const items = [
+    {
+      href: "/",
+      label: "Checklist",
+      icon: ClipboardCheck,
+    },
+    {
+      href: "/bugs",
+      label: "Bugs & Errors",
+      icon: Bug,
+    },
+    {
+      href: "/functional",
+      label: "Functional Testing",
+      icon: FlaskConical,
+    },
+    {
+      href: "/regression",
+      label: "Regression Testing",
+      icon: RotateCcw,
+    },
+  ]
+  
   if (isAdmin) {
     items.push({
       href: "/accounts",
@@ -59,7 +39,7 @@ const getNavItems = (userType?: string) => {
       icon: User,
     })
   }
-
+  
   return items
 }
 
@@ -69,7 +49,12 @@ export function Sidebar() {
   const { user, signOut } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
 
-  const navItems = getNavItems(user?.userType)
+  // Don't show sidebar on auth pages
+  if (!user || pathname === "/signin" || pathname === "/signup") {
+    return null
+  }
+
+  const navItems = getNavItems(user.userType === "admin")
 
   // Close sidebar on route change
   useEffect(() => {
@@ -87,11 +72,6 @@ export function Sidebar() {
       document.body.style.overflow = ""
     }
   }, [isOpen])
-
-  // Don't show sidebar on auth pages
-  if (!user || pathname === "/signin" || pathname === "/signup") {
-    return null
-  }
 
   return (
     <>

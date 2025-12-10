@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { LogIn, Loader2 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
@@ -26,8 +25,7 @@ export default function SignInPage() {
       } else {
         setError("Invalid credentials or access denied")
       }
-    } catch (error) {
-      console.error("Sign-in failed:", error)
+    } catch (err) {
       setError("An error occurred. Please try again.")
     } finally {
       setIsLoading(false)
@@ -35,42 +33,20 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-      <div className="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden grid grid-cols-1 md:grid-cols-2">
-        {/* Image / Brand Panel */}
-        <div className="relative hidden md:flex flex-col justify-between bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 p-6">
-          <div className="relative w-full h-20 mb-4">
-            <Image
-              src="/di-joker-logo.png"
-              alt="Di Joker Logo"
-              fill
-              className="object-contain object-left"
-              priority
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
+      <div className="w-full max-w-md">
+        {/* Logo/Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 mb-4">
+            <LogIn className="w-8 h-8 text-white" />
           </div>
-          <div className="flex-1 flex items-center">
-            <p className="text-sm text-slate-200 leading-relaxed">
-              QA SHEESH
-              <br />
-              Track bugs, testing, and dev work across all Di Joker games in one place.
-            </p>
-          </div>
-          <div className="pt-4 text-[11px] text-slate-400">
-            by Robert Kevin Ian
-          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+          <p className="text-gray-400">Sign in to your Di Joker account</p>
         </div>
 
         {/* Sign In Form */}
-        <div className="p-6 md:p-8 flex items-center justify-center">
-          <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
-            {/* Logo/Header */}
-            <div className="text-center mb-2">
-              <div className="mx-auto mb-3 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500">
-                <LogIn className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Welcome Back</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Sign in to your Di Joker account</p>
-            </div>
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
@@ -114,7 +90,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-medium rounded-lg hover:from-red-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full py-3 px-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-medium rounded-lg hover:from-red-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -125,13 +101,14 @@ export default function SignInPage() {
                 "Sign In"
               )}
             </button>
-
-            {/* Footer Note */}
-            <p className="text-center text-gray-500 dark:text-gray-400 text-xs">
-              Contact admin for account access
-            </p>
           </form>
+
         </div>
+
+        {/* Footer Note */}
+        <p className="text-center text-gray-500 text-xs mt-6">
+          Contact admin for account access
+        </p>
       </div>
     </div>
   )
