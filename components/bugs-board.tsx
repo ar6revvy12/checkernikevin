@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type MouseEvent } from "react"
+import { useState, type MouseEvent as ReactMouseEvent } from "react"
 import { Trash2, Pencil, ExternalLink, GripVertical } from "lucide-react"
 import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
 import { DevStatusDropdown, DevCommentInput } from "./bugs-table"
@@ -30,7 +30,7 @@ export function BugsBoard({ bugs, onUpdateStatus, onUpdateDevStatus, onDeleteBug
   const hasActions = Boolean(onEditBug || onDeleteBug)
   const canEditDevFields = canEditDevInfo && Boolean(onUpdateDevStatus)
 
-  const handleCardClick = (event: MouseEvent<HTMLDivElement>, bug: Bug) => {
+  const handleCardClick = (event: ReactMouseEvent<HTMLDivElement>, bug: Bug) => {
     if (!onSelectBug) return
     const target = event.target as HTMLElement
     if (target.closest("button, a, textarea, input, select")) return
@@ -130,7 +130,7 @@ export function BugsBoard({ bugs, onUpdateStatus, onUpdateDevStatus, onDeleteBug
                     >
                       {/* Card Header */}
                       <div className="flex items-start gap-2 mb-2">
-                        <GripVertical className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <GripVertical className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <span className="text-xs font-medium text-gray-500 dark:text-gray-400">

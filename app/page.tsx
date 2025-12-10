@@ -172,7 +172,7 @@ export default function Home() {
               <div className="flex-1 p-4 sm:p-6">
                 {/* Game Header */}
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg flex-shrink-0">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-linear-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg shrink-0">
                     {activeGame.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -198,7 +198,7 @@ export default function Home() {
                   </div>
                   <div className="w-full h-2 sm:h-2.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
+                      className="h-full bg-linear-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
                       style={{ width: `${completionPercentage}%` }}
                     />
                   </div>
@@ -273,7 +273,7 @@ export default function Home() {
                             : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
                         }`}
                       >
-                        <Gamepad2 className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-blue-200' : 'text-gray-400'}`} />
+                        <Gamepad2 className={`w-4 h-4 shrink-0 ${isActive ? 'text-blue-200' : 'text-gray-400'}`} />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{game.name}</p>
                           <p className={`text-xs ${isActive ? 'text-blue-200' : 'text-gray-400'}`}>{gamePercent}%</p>

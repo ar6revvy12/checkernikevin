@@ -1,6 +1,11 @@
 "use client"
 
-import { useState, useRef, useEffect, type MouseEvent } from "react"
+import {
+  useState,
+  useRef,
+  useEffect,
+  type MouseEvent as ReactMouseEvent,
+} from "react"
 import { Trash2, Search, Pencil, ChevronDown, Filter, AlertCircle, ExternalLink, MessageSquare } from "lucide-react"
 import type { Bug, BugStatus, DevStatus } from "@/types/bugs"
 
@@ -78,7 +83,7 @@ export function DevStatusDropdown({ value, onChange }: { value: DevStatus; onCha
   const config = devStatusConfig[value]
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: globalThis.MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
     }
     document.addEventListener("mousedown", handleClickOutside)
@@ -152,7 +157,7 @@ export function DevCommentInput({
         className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors max-w-[200px]"
         title={comment || "Add comment"}
       >
-        <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
+        <MessageSquare className="w-3.5 h-3.5 shrink-0" />
         <span className="truncate whitespace-pre-wrap line-clamp-2">
           {comment || "Add comment..."}
         </span>
@@ -206,7 +211,7 @@ function StatusDropdown({ value, onChange }: { value: BugStatus; onChange: (stat
   const config = statusConfig[value]
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: globalThis.MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
     }
     document.addEventListener("mousedown", handleClickOutside)
@@ -288,14 +293,14 @@ export function BugsTable({ bugs, games, onUpdateStatus, onDeleteBug, onEditBug,
     })
   }
 
-  const handleRowClick = (event: MouseEvent<HTMLTableRowElement>, bug: Bug) => {
+  const handleRowClick = (event: ReactMouseEvent<HTMLTableRowElement>, bug: Bug) => {
     if (!onSelectBug) return
     const target = event.target as HTMLElement
     if (target.closest("button, a, input, textarea, select")) return
     onSelectBug(bug)
   }
 
-  const handleCardClick = (event: MouseEvent<HTMLDivElement>, bug: Bug) => {
+  const handleCardClick = (event: ReactMouseEvent<HTMLDivElement>, bug: Bug) => {
     if (!onSelectBug) return
     const target = event.target as HTMLElement
     if (target.closest("button, a, input, textarea, select")) return

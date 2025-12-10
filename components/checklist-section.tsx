@@ -125,7 +125,7 @@ function StatusDropdown({
       {isOpen && (
         <div 
           style={dropdownStyle}
-          className="z-[9999] min-w-[120px] bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-lg overflow-hidden"
+          className="z-9999 min-w-[120px] bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-lg overflow-hidden"
         >
           {statusOptions.map((option) => {
             const optionConfig = statusConfig[option.value]
@@ -168,21 +168,21 @@ export function ChecklistSection({ title, items, isExpanded, onToggleExpand, onU
       >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <ChevronRight
-            className={`w-4 h-4 text-gray-400 transition-transform duration-200 flex-shrink-0 ${isExpanded ? "rotate-90" : ""}`}
+            className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-90" : ""}`}
           />
           <h3 className="font-medium text-sm sm:text-base text-gray-900 dark:text-white truncate">{title}</h3>
-          <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+          <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
             {completedCount}/{items.length}
           </span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="w-16 sm:w-24 h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${percentage === 100 ? 'bg-green-500' : 'bg-blue-500'}`}
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <span className={`text-xs font-medium min-w-[2rem] sm:min-w-[2.5rem] text-right ${percentage === 100 ? 'text-green-500' : 'text-gray-500 dark:text-gray-400'}`}>
+            <span className={`text-xs font-medium min-w-8 sm:min-w-10 text-right ${percentage === 100 ? 'text-green-500' : 'text-gray-500 dark:text-gray-400'}`}>
             {percentage}%
           </span>
         </div>
@@ -228,7 +228,7 @@ export function ChecklistSection({ title, items, isExpanded, onToggleExpand, onU
                             href={item.evidence}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-shrink-0 text-blue-500 hover:text-blue-600 dark:hover:text-blue-400"
+                            className="shrink-0 text-blue-500 hover:text-blue-600 dark:hover:text-blue-400"
                             title="Open link"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />

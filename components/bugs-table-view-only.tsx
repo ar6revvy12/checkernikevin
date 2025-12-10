@@ -159,7 +159,7 @@ function DevCommentInput({
         className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors max-w-[200px]"
         title={comment || "Add comment"}
       >
-        <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
+        <MessageSquare className="w-3.5 h-3.5 shrink-0" />
         <span className="truncate whitespace-pre-wrap line-clamp-2">
           {comment || "Add comment..."}
         </span>

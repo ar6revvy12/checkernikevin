@@ -8,7 +8,7 @@ export default function PublicLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="fixed inset-0 z-[9999] bg-gray-50 dark:bg-slate-900 overflow-auto ml-0 lg:ml-0">
+    <div className="fixed inset-0 z-9999 bg-gray-50 dark:bg-slate-900 overflow-auto ml-0 lg:ml-0">
       <style jsx global>{`
         .lg\\:ml-64 {
           margin-left: 0 !important;

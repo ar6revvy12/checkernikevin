@@ -150,7 +150,7 @@ export function Sidebar() {
           {/* User Info */}
           <div className="px-3 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-linear-to-br from-red-500 to-orange-500 flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1 min-w-0">
@@ -162,7 +162,7 @@ export function Sidebar() {
                 </p>
               </div>
             </div>
-            <div className="mt-2 px-2 py-1 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded text-xs font-medium text-red-600 dark:text-red-400 text-center">
+            <div className="mt-2 px-2 py-1 bg-linear-to-r from-red-500/10 to-orange-500/10 rounded text-xs font-medium text-red-600 dark:text-red-400 text-center">
               {user?.team}
             </div>
           </div>

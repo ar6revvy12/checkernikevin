@@ -92,7 +92,7 @@ export function AIChat() {
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-96 h-[600px] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden border border-gray-200 dark:border-slate-700">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 flex items-center justify-between">
+          <div className="bg-linear-to-r from-blue-600 to-purple-600 p-4 flex items-center justify-between">
             <div className="flex items-center gap-2 text-white">
               <Sparkles className="w-5 h-5" />
               <div>

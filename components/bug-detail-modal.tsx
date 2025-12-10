@@ -65,7 +65,7 @@ export function BugDetailModal({
   const createdDate = new Date(bug.createdAt).toLocaleString()
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div className="fixed inset-0 z-100 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-800">
@@ -133,7 +133,7 @@ export function BugDetailModal({
           </div>
 
           <div className="space-y-5">
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white shadow-lg">
+            <div className="p-4 rounded-2xl bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white shadow-lg">
               <p className="text-xs uppercase tracking-wider text-white/60">QA Status</p>
               <p className="text-3xl font-bold mt-2">{statusConfig.label}</p>
               <p className="text-sm text-white/60 mt-1">Assigned to {gameName}</p>

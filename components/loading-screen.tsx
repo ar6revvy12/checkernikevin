@@ -24,7 +24,7 @@ export function LoadingScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-[99999] flex items-center justify-center bg-black transition-opacity duration-500 ${
+      className={`fixed inset-0 z-99999 flex items-center justify-center bg-black transition-opacity duration-500 ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
     >
