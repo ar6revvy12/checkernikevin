@@ -26,6 +26,7 @@ export default function SignInPage() {
         setError("Invalid credentials or access denied")
       }
     } catch (err) {
+      console.error("Sign in failed:", err)
       setError("An error occurred. Please try again.")
     } finally {
       setIsLoading(false)

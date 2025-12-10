@@ -55,6 +55,7 @@ export default function SignUpPage() {
         setError("Failed to create account. Email may already be in use.")
       }
     } catch (err) {
+      console.error("Sign up failed:", err)
       setError("An error occurred. Please try again.")
     } finally {
       setIsLoading(false)

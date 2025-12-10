@@ -41,7 +41,6 @@ export default function Home() {
   }, [games, activeGameId])
 
   const activeGame = games.find((g) => g.id === activeGameId)
-  const checklist = activeGame?.checklist || {}
 
   const filteredGames = games.filter((game) =>
     game.name.toLowerCase().includes(gameSearch.toLowerCase())

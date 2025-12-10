@@ -99,6 +99,7 @@ export default function AccountsPage() {
         setError(data.error || "Failed to create user")
       }
     } catch (err) {
+      console.error("Failed to create user:", err)
       setError("An error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
